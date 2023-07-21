@@ -8,7 +8,6 @@ from app.core.logger import log
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
 from app.database.models.meter import MeterModel
-from app.database.models.meter import MeterModel
 from app.energy.adapters import adapter, energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
@@ -17,9 +16,9 @@ from app.schemas.meter import MeterCreateDTO
 class EnergyProvider:
     """A service to work with different sorts of BaseAdapters"""
 
-    def __init__(self, source_provider: str | None, provider_key: str | None):
-        if source_provider and provider_key:
-            self._source_provider = source_provider.lower()
+    def __init__(self, provider_name: str | None, provider_key: str | None):
+        if provider_name and provider_key:
+            self._provider_name = provider_name.lower()
             self._provider_key = provider_key
             self.adapter = self.give_adapter()
 
@@ -28,7 +27,7 @@ class EnergyProvider:
     def give_adapter(self) -> adapter.BaseAdapter:
         """Give adapter for the provider"""
 
-        match self._source_provider:
+        match self._provider_name:
             case "energiemissie":
                 return energiemissie.EnergiemissieAdapter(self._provider_key)
             case "joulz":
@@ -42,7 +41,7 @@ class EnergyProvider:
             case _:
                 return HTTP_ERROR(
                     404,
-                    f"We do not support: {self._source_provider} as energy provider",
+                    f"We do not support: {self._provider_name} as energy provider",
                 )
 
     async def write_measurements(
