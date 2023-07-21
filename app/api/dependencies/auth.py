@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.api.helpers.auth import decode_access_token, encode_access_token
+from app.api.dependencies.token import decode_access_token, encode_access_token
 from app.core.error import HTTP_ERROR
 from app.core.settings import env
 from app.database.crud.user import user_crud
