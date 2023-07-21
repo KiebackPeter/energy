@@ -15,11 +15,5 @@ WORKDIR /code
 COPY --from=requirements-stage /tmp/requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-
-# TODO: bind instead of copy for dynamic changes
 COPY ./app /code/app
-COPY ./.env /code/.env
 COPY ./alembic.ini /code/alembic.ini
-
-# Run the API
-CMD alembic upgrade head; uvicorn app.main:api --proxy-headers --host 0.0.0.0 --ssl-keyfile app/core/certificates/star_kieback-peter.net-decrypted.key --ssl-certfile app/core/certificates/star_kieback-peter.net.crt --reload

@@ -1,14 +1,13 @@
 # Deployment
 
-<!-- create external volume for presist data between different docker projects
-
-    docker volume create energy-database -->
-
 start all docker containers with
 
     docker-compose up -d database pgadmin
 
     docker-compose up energy
+
+# [Energy dashboard](http://localhost:5555)
+flower UI for celery workers and tasks
 
 # [Postgres admin interface](http://localhost:8080)
 
