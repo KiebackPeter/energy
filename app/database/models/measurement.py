@@ -14,6 +14,6 @@ class MeasurementModel(BaseModel):
         {},
     )
     timestamp: Mapped[float] = mapped_column(index=True)
-    channel_id: Mapped[int] = mapped_column(ForeignKey(ChannelModel.id), index=True)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("channel.id"), index=True)
     value: Mapped[float] = mapped_column()
     accumulated: Mapped[float | None] = mapped_column()

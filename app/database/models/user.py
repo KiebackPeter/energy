@@ -16,5 +16,5 @@ class UserModel(BaseModel):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
     installation_id: Mapped[int | None] = mapped_column(
-        ForeignKey(InstallationModel.id)
+        ForeignKey("installation.id")
     )
