@@ -1,0 +1,25 @@
+FROM python:3.11 as requirements-stage
+
+WORKDIR /tmp
+
+RUN pip install poetry
+
+COPY ./pyproject.toml ./poetry.lock* /tmp/
+
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+FROM python:3.11
+ 
+WORKDIR /code
+
+COPY --from=requirements-stage /tmp/requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+
+# TODO: bind instead of copy for dynamic changes
+COPY ./app /code/app
+COPY ./.env /code/.env
+COPY ./alembic.ini /code/alembic.ini
+
+# Run the API
+CMD alembic upgrade head; uvicorn app.main:api --proxy-headers --host 0.0.0.0 --ssl-keyfile app/core/certificates/star_kieback-peter.net-decrypted.key --ssl-certfile app/core/certificates/star_kieback-peter.net.crt --reload

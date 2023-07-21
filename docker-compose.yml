@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres
+    restart: always
+
+    ports:
+      - 5432  # :5432 append for forwarding to localhost
+    networks:
+      - database-network
+
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+    volumes:
+      - energy-database:/var/lib/postgresql/data
+
+
+  energy:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    restart: always
+
+    ports:
+      - 443:8000
+    networks:
+      - database-network
+
+    env_file:
+      - .env
+    volumes:
+      - ./app:/code/app
+    depends_on:
+      - database
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    
+    ports:
+      - 8080:80
+    networks:
+      - database-network
+
+    environment:
+      - PGADMIN_DEFAULT_SERVER=localhost
+      - PGADMIN_DEFAULT_EMAIL=admin@kieback-peter.nl
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - database
+
+
+networks:
+  database-network:
+
+volumes:
+  energy-database:
+    # external: true
+  pgadmin-data:

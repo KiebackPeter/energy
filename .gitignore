@@ -1,0 +1,12 @@
+# App
+.env
+.coverage
+
+# IDE
+.venv
+.vscode
+
+# System
+__pycache__/
+*.pyc
+.DS_Store

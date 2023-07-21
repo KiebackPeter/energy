@@ -1,0 +1,59 @@
+from datetime import datetime
+from typing import Annotated
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.api.dependencies.installation import with_owner
+
+from app.database.crud.measurement import measurement_crud
+
+from app.database.models.installation import InstallationModel
+from app.database.session import use_db
+
+router = APIRouter()
+
+# TODO: postgres trigger recalculations
+# @router.post("/{channel_id}")
+# def new_measurements(new_meter=Depends(create_measurement)):
+#     return new_meter
+
+
+# @router.put("/{measurement_id}")
+# def put_measurement(new_meter=Depends(update_measurement)):
+#     return new_meter
+
+
+@router.get("/{channel_id}/day/{year}/{month}/{day}")
+def day_measurements(
+    channel_id: int,
+    year: int,
+    month: int,
+    day: int,
+    installation: Annotated[InstallationModel, Depends(with_owner)],
+    session: Annotated[Session, Depends(use_db)],
+):
+    measurements = measurement_crud.get_with_date_range(
+        session,
+        channel_id=channel_id,
+        from_date=datetime(year, month, day).timestamp(),
+        till_date=datetime(year, month, day + 1).timestamp(),
+    )
+
+    return measurements
+
+
+@router.get("/{channel_id}/month/{year}/{month}")
+def month_measurements(
+    channel_id: int,
+    year: int,
+    month: int,
+    installation: Annotated[InstallationModel, Depends(with_owner)],
+    session: Annotated[Session, Depends(use_db)],
+):
+    measurements = measurement_crud.get_with_date_range(
+        session,
+        channel_id=channel_id,
+        from_date=datetime(year, month, 1).timestamp(),
+        till_date=datetime(year, month + 1, 1).timestamp(),
+    )
+
+    return measurements
