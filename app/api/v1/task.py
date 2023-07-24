@@ -37,6 +37,7 @@ async def fetch_measurements_for_all_installations(
     tasks = []
 
     for installation in installations:
+        # FIX dont pass model object but dict
         task = await worker.get_updates.delay(installation)
         tasks.append(task)
 
