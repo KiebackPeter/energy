@@ -1,10 +1,9 @@
 from typing import Annotated
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 from app.api.dependencies.user import current_active_superuser, current_active_user
 from app.core.error import HTTP_ERROR
-from app.database.crud.installation import installation_crud
+from app.database.crud.installation import installation_crud ,Session
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
 from app.database.session import use_db
@@ -40,7 +39,7 @@ def with_owner(
 def provider_of_installation(
     installation: Annotated[InstallationModel, Depends(with_owner)],
 ):
-    provider = EnergyProvider(installation.provider_name, installation.provider_key)
+    provider = EnergyProvider(installation)
 
     return provider
 
@@ -49,10 +48,10 @@ def provider_of_installation(
 
 
 def get_all_installations(
-    skip: int | None,
-    limit: int | None,
     session: Annotated[Session, Depends(use_db)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
+    skip: int | None = None,
+    limit: int | None = None,
 ):
     installations = installation_crud.get_multi(session, skip=skip, limit=limit)
 

@@ -1,11 +1,10 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 from fastapi.encoders import jsonable_encoder
 
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 
 from app.core.error import HTTP_ERROR
-from app.core.implementations.base_crud import CRUDBase
+from app.core.implementations.base_crud import Session, CRUDBase # ,log
 from app.database.models.user import UserModel
 from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
 

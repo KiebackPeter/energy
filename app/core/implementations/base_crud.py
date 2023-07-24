@@ -1,9 +1,10 @@
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel as DTO
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session #
 
+from app.core.logger import log # create cutstom crud logger
 from app.core.error import HTTP_ERROR
 from app.core.implementations.base_model import BaseModel
 

@@ -1,3 +1,4 @@
+from calendar import monthrange
 from datetime import datetime, timedelta
 from app.core.error import HTTP_ERROR
 from app.core.logger import log
@@ -16,15 +17,17 @@ class EnergyProvider:
     """A service to work with different sorts of BaseAdapters"""
 
     def __init__(self, installation: InstallationModel):
-
         self.installation = installation
         self._session = use_db()
 
         if self.installation.provider_name and self.installation.provider_key:
             self.adapter = self.__give_adapter()
 
-            log.info("installation: %s adapter: %s",
-                     self.installation.name, self.adapter.__class__.__name__)
+            log.info(
+                "installation: %s adapter: %s",
+                self.installation.name,
+                self.adapter.__class__.__name__,
+            )
 
     @property
     def meters(self):
@@ -35,7 +38,9 @@ class EnergyProvider:
 
         match self.installation.provider_name:
             case "energiemissie":
-                return energiemissie.EnergiemissieAdapter(self.installation.provider_name)
+                return energiemissie.EnergiemissieAdapter(
+                    self.installation.provider_name
+                )
             case "joulz":
                 return joulz.JoulzAdapter(self.installation.provider_name)
             # case "fudura":
@@ -55,16 +60,16 @@ class EnergyProvider:
 
         new_meters = []
         local_meters = []
-        remote_meters: list[MeterModel] = await self.adapter.fetch_meter_list()
+        remote_meters: list[MeterCreateDTO] = await self.adapter.fetch_meter_list()
 
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(
-                self._session, meter.source_id)
+            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
 
             match local_meter:
                 case None:
-                    new_meters.append(meter_crud.create(
-                        self._session, meter, self.installation.id))
+                    new_meters.append(
+                        meter_crud.create(self._session, meter, self.installation.id)
+                    )
                 case _:
                     local_meters.append(local_meter)
 
@@ -76,7 +81,7 @@ class EnergyProvider:
             len(new_meters),
         )
 
-        return remote_meters
+        return new_meters + local_meters
 
     async def __write_measurements(
         self,
@@ -98,8 +103,7 @@ class EnergyProvider:
         for meausurement in channel_data.measurements:
             # TODO correct execpt and callback
             try:
-                measurement_crud.create(
-                    self._session, meausurement, local_channel.id)
+                measurement_crud.create(self._session, meausurement, local_channel.id)
             except Exception as err:
                 log.critical("%s", err)
                 continue
@@ -113,7 +117,7 @@ class EnergyProvider:
             meter.source_id, date
         )
         for raw_channel in day_measurements_per_channel:
-            self.__write_measurements(meter.id, raw_channel)
+            await self.__write_measurements(meter.id, raw_channel)
 
         return day_measurements_per_channel
 
@@ -125,7 +129,7 @@ class EnergyProvider:
             meter.source_id, date
         )
         for raw_channel in month_measurements_per_channel:
-            self.__write_measurements(meter.id, raw_channel)
+            await self.__write_measurements(meter.id, raw_channel)
 
         return month_measurements_per_channel
 
@@ -133,32 +137,22 @@ class EnergyProvider:
         self,
         meter: MeterModel,
     ):
-        log.info(
-            "updating measurements for meter: %s id: %s",
-            meter.name,
-            meter.id
+        log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
+
+        # NOTE checks only the first channel
+        latest_known = measurement_crud.latest_measurement(
+            self._session, meter.channels[0].id
         )
 
         today = datetime.today()
-        latest_known = today - timedelta(days=(365 * 5))
-
-        for channel in meter.channels:
-            latest = measurement_crud.latest_measurement(
-                self._session, channel.id)
-
-            if latest.timestamp > latest_known:
-                latest_known = latest.timestamp
-
         num_months = (
-            (today.year - latest_known.year) * 12 +
-            (today.month - latest_known.month) + 1
+            (today.year - latest_known.year) * 12
+            + (today.month - latest_known.month)
+            + 1
         )
-
         for _ in range(num_months):
-            await self.get_month_measurements(meter.source_id, latest_known)
-            _, days_in_month = monthrange(
-                latest_known.year, latest_known.month)
-            latest_known = latest_known.replace(
-                day=days_in_month) + timedelta(days=1)
-
+            await self.get_month_measurements(meter, latest_known)
+            _, days_in_month = monthrange(latest_known.year, latest_known.month)
+            latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
+            
         return "done"

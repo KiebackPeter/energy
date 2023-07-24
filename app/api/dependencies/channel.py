@@ -1,10 +1,9 @@
 from typing import Annotated
 from fastapi import Depends
-from sqlalchemy.orm import Session
 from app.api.dependencies.installation import of_user
 
 from app.core.error import HTTP_ERROR
-from app.database.crud.channel import channel_crud
+from app.database.crud.channel import channel_crud, Session
 from app.database.models.channel import ChannelModel
 from app.database.models.installation import InstallationModel
 from app.database.session import use_db

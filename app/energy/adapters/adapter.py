@@ -31,6 +31,7 @@ class BaseAdapter(ABC):
                 return response
 
             case 401:
+                print(response)
                 HTTP_ERROR(404, "Credentials failed to authenticate on provider")
                 return [{"response": response}]
 

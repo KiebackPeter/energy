@@ -10,41 +10,28 @@ services:
     command: bash -c "alembic upgrade head && uvicorn app.main:api --proxy-headers --host 0.0.0.0 --ssl-keyfile app/core/certificates/star_kieback-peter.net-decrypted.key --ssl-certfile app/core/certificates/star_kieback-peter.net.crt --reload"
     environment:
       - API_LOG_LEVEL=${API_LOG_LEVEL}
-      - SIGN_KEY=${SECRET_API_KEY}
+      - SIGN_KEY=${SIGN_KEY}
       - TOKEN_EXPIRE_MINUTES=${TOKEN_EXPIRE_MINUTES}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DB_PORT=${DB_PORT}
-      - DB_HOST=${DB_HOST}
     volumes:
       - ./app:/code/app
     depends_on:
       - database
-      - worker
 
   worker:
     build: .
     command: celery -A app.energy.worker.celery worker --loglevel=info
     volumes:
-      - ./worker:/usr/src/app
+      - ./app:/usr/src/app
     environment:
-      - CELERY_BROKER_URL=redis://broker:6379/0
-      - CELERY_RESULT_BACKEND=redis://broker:6379/0
+      - CELERY_BROKER_URL=${BROKER_URL}
+      - CELERY_RESULT_BACKEND=${BROKER_URL}
     depends_on:
       - broker
-      - database
-
-  flower:
-    build: .
-    command: celery --broker=redis://broker:6379/0 flower --port=5555
-    ports:
-      - 5555:5555
-    environment:
-      - CELERY_BROKER_URL=redis://broker:6379/0
-      - CELERY_RESULT_BACKEND=redis://broker:6379/0
-    depends_on:
-      - worker
 
   broker:
     image: redis:7
@@ -60,6 +47,17 @@ services:
       - POSTGRES_DB=${DB_NAME}
     volumes:
       - energy-database:/var/lib/postgresql/data
+
+  flower:
+    build: .
+    command: celery --broker=${BROKER_URL} flower --port=5555
+    ports:
+      - 5555:5555
+    environment:
+      - CELERY_BROKER_URL=${BROKER_URL}
+      - CELERY_RESULT_BACKEND=${BROKER_URL}
+    depends_on:
+      - worker
 
   pgadmin:
     image: dpage/pgadmin4

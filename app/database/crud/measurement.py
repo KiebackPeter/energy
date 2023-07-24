@@ -2,10 +2,8 @@ from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import desc
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from app.core.logger import log
-from app.core.implementations.base_crud import CRUDBase
+from app.core.implementations.base_crud import log, Session, CRUDBase
 from app.database.models.measurement import MeasurementModel
 from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
 
@@ -23,7 +21,7 @@ class CRUDMeasurement(
         installation_data["channel_id"] = channel_id
         measurement = MeasurementModel(**installation_data)
 
-        # catch constain on double timestamps for a channel_id
+        # TODO: catch constain on double timestamps for a channel_id
         try:
             self.commit(session, database_model=measurement)
         except IntegrityError as err:
@@ -58,7 +56,10 @@ class CRUDMeasurement(
             .order_by(desc(self.model.timestamp))
             .first()
         )
-        return measurement
+        if measurement:
+                return datetime.fromtimestamp(measurement.timestamp)
+        else:
+            return  datetime.today() - timedelta(days=(365 * 5))
 
     def delete_since(
         self,

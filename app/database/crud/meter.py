@@ -1,7 +1,5 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
-
-from app.core.implementations.base_crud import CRUDBase
+from app.core.implementations.base_crud import Session, CRUDBase # ,log
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 

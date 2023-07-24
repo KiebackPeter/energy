@@ -1,11 +1,6 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
-
-from app.core.error import HTTP_ERROR
-from app.core.implementations.base_crud import CRUDBase
-from app.core.logger import log
+from app.core.implementations.base_crud import log, Session, CRUDBase
 from app.database.models.channel import ChannelModel
-from app.database.models.measurement import MeasurementModel
 from app.schemas.channel import ChannelCreateDTO, ChannelUpdateDTO
 
 
