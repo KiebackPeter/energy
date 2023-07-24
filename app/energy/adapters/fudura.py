@@ -32,7 +32,7 @@ class FuduraAdapter(BaseAdapter):
         post(self.base_url, files)
         return
 
-    async def get_meter_list(self) -> list[MeterCreateDTO]:
+    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
         return
 
@@ -41,10 +41,10 @@ class FuduraAdapter(BaseAdapter):
     ) -> list[ChannelWithMeasurements]:
         return
 
-    async def get_day_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_day_measurements(self, meter: MeterModel, date: datetime):
         """Get measurement values from a meter on a speficic day"""
         return self.format_measurements()
 
-    async def get_month_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_month_measurements(self, meter: MeterModel, date: datetime):
         """Get measurement values from a meter on a speficic day"""
         return self.format_measurements()

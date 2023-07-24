@@ -62,7 +62,7 @@ async def update_month_measurement_from_provider(
     provider=Depends(provider_of_installation),
 ):
     do.add_task(
-        provider.get_month_measurements,
+        provider.fetch_month_measurements,
         session,
         meter_id,
         datetime(year, month, day=1).timestamp(),

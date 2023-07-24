@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from app.core.logger import log
@@ -46,6 +47,18 @@ class CRUDMeasurement(
             )
             .all()
         )
+
+    def latest_measurement(
+        self, session: Session,
+        channel_id: int
+    ):
+        measurement = (
+            session.query(self.model)
+            .filter(self.model.channel_id == channel_id)
+            .order_by(desc(self.model.timestamp))
+            .first()
+        )
+        return measurement
 
     def delete_since(
         self,

@@ -17,7 +17,7 @@ class JoulzAdapter(BaseAdapter):
         self.surfix = f"/?apikey={self.key}&format=json"  # NOTE maybe add '?tf=utc'
         self.base_url = "https://joulz.e-dataportal.nl/api/v3"
 
-    async def get_meter_list(self) -> list[MeterCreateDTO]:
+    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
 
         raw_meter_list = await self.make_request(
@@ -76,7 +76,7 @@ class JoulzAdapter(BaseAdapter):
 
         return measurements_per_channel
 
-    async def get_day_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_day_measurements(self, meter: MeterModel, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         # day_before = date - timedelta(days=1)
@@ -91,7 +91,7 @@ class JoulzAdapter(BaseAdapter):
         # print(raw_measurements)
         return self.format_measurements(raw_measurements)
 
-    async def get_month_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_month_measurements(self, meter: MeterModel, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         if date.month < 12:

@@ -21,17 +21,17 @@
 #         energy_provider = EnergyProvider('energiemissie', 'source_key')
 #         assert isinstance(energy_provider.give_adapter(), EnergiemissieAdapter)
 
-#     # Tests that get_meter_list() returns a list of MeterCreateDTO objects
+#     # Tests that fetch_meter_list() returns a list of MeterCreateDTO objects
 #     @pytest.mark.asyncio
-#     async def test_get_meter_list(self):
+#     async def test_fetch_meter_list(self):
 #         energy_provider = EnergyProvider('energiemissie', 'source_key')
-#         meter_list = await energy_provider.get_meter_list()
+#         meter_list = await energy_provider.fetch_meter_list()
 #         assert isinstance(meter_list, list)
 #         assert all(isinstance(meter, MeterCreateDTO) for meter in meter_list)
 
-#     # Tests that get_day_measurements() returns a dictionary of MeasurementCreateDTO objects
+#     # Tests that fetch_day_measurements() returns a dictionary of MeasurementCreateDTO objects
 #     @pytest.mark.asyncio
-#     async def test_get_day_measurements(self):
+#     async def test_fetch_day_measurements(self):
 #         energy_provider = EnergyProvider('energiemissie', 'source_key')
 #         meter = MeterInBD(source_id=123)
 #         date = datetime.now()
@@ -39,14 +39,14 @@
 #         assert isinstance(day_measurements, dict)
 #         assert all(isinstance(measurement, MeasurementCreateDTO) for measurement in day_measurements.values())
 
-#     # Tests that get_month_measurements() returns a dictionary of MeasurementCreateDTO objects
+#     # Tests that fetch_month_measurements() returns a dictionary of MeasurementCreateDTO objects
 #     @pytest.mark.asyncio
-#     async def test_get_month_measurements(self):
+#     async def test_fetch_month_measurements(self):
 #         energy_provider = EnergyProvider('energiemissie', 'source_key')
 #         meter = MeterInBD(source_id=123)
         
 #         date = datetime.now()
-#         month_measurements = await energy_provider.get_month_measurements(meter, date)
+#         month_measurements = await energy_provider.fetch_month_measurements(meter, date)
 #         assert isinstance(month_measurements, dict)
 #         assert all(isinstance(measurement, MeasurementCreateDTO) for measurement in month_measurements.values())
 

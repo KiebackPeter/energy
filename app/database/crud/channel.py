@@ -5,6 +5,7 @@ from app.core.error import HTTP_ERROR
 from app.core.implementations.base_crud import CRUDBase
 from app.core.logger import log
 from app.database.models.channel import ChannelModel
+from app.database.models.measurement import MeasurementModel
 from app.schemas.channel import ChannelCreateDTO, ChannelUpdateDTO
 
 
@@ -35,16 +36,5 @@ class CRUDChannel(CRUDBase[ChannelModel, ChannelCreateDTO, ChannelUpdateDTO]):
                 meter_id=meter_id,
             )
         return channel
-
-    def get_all_by_meter_id(
-        self, session: Session, meter_id: int
-    ) -> list[ChannelModel]:
-        channels = (
-            session.query(self.model).filter(self.model.meter_id == meter_id).all()
-        )
-        if not channels:
-            HTTP_ERROR(404, f"No channels found for meter id: {meter_id}")
-        return channels
-
 
 channel_crud = CRUDChannel(ChannelModel)

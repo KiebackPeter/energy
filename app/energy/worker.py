@@ -2,12 +2,16 @@ import os
 import time
 
 from celery import Celery
+from app.database.models.meter import MeterModel
+from app.core.logger import log
 
 from app.energy.provider import EnergyProvider
 
 celery = Celery(__name__)
-celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
-celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+celery.conf.broker_url = os.environ.get(
+    "CELERY_BROKER_URL", "redis://localhost:6379")
+celery.conf.result_backend = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379")
 
 
 @celery.task(name="create_task")
@@ -16,16 +20,19 @@ def create_task(task_type):
     return True
 
 
-@celery.task(name="fetch_meters")
-def fetch_meters(name, key):
-    provider = EnergyProvider(provider_name=name, provider_key=key)
-    remote_meters = provider.get_meter_list()
-    # write to db
+@celery.task(name="update_meters")
+async def update_meters(provider: EnergyProvider):
+    remote_meters = await provider.update_meter_list()
+
     return remote_meters
 
 
 @celery.task(name="update_measurements")
-def update_measurements():
-    
-    pass
-    
+async def update_measurements(provider: EnergyProvider, meters: list[MeterModel]):
+
+    for meter in meters:
+        await provider.update_meter_measurements(meter)
+
+    log.info("updated %s meter(s)", len(meters))
+
+    return meters

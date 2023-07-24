@@ -16,11 +16,8 @@ router = APIRouter()
 @router.get("/{meter_id}/all")
 def all_channels(
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
-    session: Annotated[Session, Depends(use_db)],
 ):
-    channels = channel_crud.get_all_by_meter_id(session, meter.id)
-
-    return channels
+    return meter.channels
 
 
 @router.put("/{channel_id}/qanteon_name")
