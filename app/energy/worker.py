@@ -1,5 +1,5 @@
 import time
-from asyncio import get_event_loop
+from asyncio import get_event_loop, create_task
 from celery import Celery
 from app.core.logger import log, env
 from app.database.models.installation import InstallationModel
@@ -11,11 +11,6 @@ from app.energy.provider import EnergyProvider
 
 celery = Celery("energy", broker=env.broker_url, backend=env.broker_url)
 
-
-@celery.task(name="create_task")
-def create_task(task_type):
-    time.sleep(int(task_type) * 10)
-    return True
 
 
 @celery.task(name="update_meters")
@@ -46,10 +41,20 @@ def get_updates(installation_id: int, name: str, key: str):
     provider = EnergyProvider(installation_id, name, key)
 
     loop = get_event_loop()
-
     remote_meters = loop.run_until_complete(provider.update_meter_list())
+    print(remote_meters)
+    
+    background_tasks = set()
 
     for meter in remote_meters:
-        loop.create_task(provider.update_meter_measurements(meter))
+        task = loop.create_task(provider.update_meter_measurements(meter))
 
+        # Add task to the set. This creates a strong reference.
+        background_tasks.add(task)
+
+        # To prevent keeping references to finished tasks forever,
+        # make each task remove its own reference from the set after
+        # completion:
+        task.add_done_callback(background_tasks.discard)
+    
     return {"status": True}

@@ -17,11 +17,11 @@ class env:
         or "06b7a95639d25c7aa6cf66aa6c3b099f6f3e881810f4b93f7e8da25e094f56c8"
     )
     
-    db_user: str = getenv("DB_USER") or "admin"
-    db_password: str = getenv("DB_PASSWORD") or "admin"
+    db_user: str = getenv("DB_USER") or "super_kp"
+    db_password: str = getenv("DB_PASSWORD") or "super_kp"
 
     db_name: str = getenv("DB_NAME") or "postgres"
     db_driver: str = "postgresql"
-    db_host: str = getenv("DB_HOST") or "localhost"
+    db_host: str = getenv("DB_HOST") or "database"
     db_port: str = getenv("DB_PORT") or "5432"
     db_url: str = f"{db_driver}://{db_user}:{db_password}@{db_host}:{db_port}/"

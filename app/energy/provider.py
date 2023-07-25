@@ -2,7 +2,7 @@ from calendar import monthrange
 from datetime import datetime, timedelta
 from app.core.error import HTTP_ERROR
 from app.core.logger import log
-from app.database.session import use_db
+from app.database.session import SessionLocal
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
@@ -11,17 +11,18 @@ from app.energy.adapters import adapter, energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
 
+local_session =  SessionLocal()
 
 class EnergyProvider:
     """A service to work with different sorts of BaseAdapters"""
 
     def __init__(self, installation_id: int, provider_name: str, provider_key: str):
-        
+
         self.installation_id = installation_id
         self.name = provider_name
         self.key = provider_key
-        
-        self._session = use_db()
+
+        self._session = self.session
         self._adapter = self.adapter
 
         log.info(
@@ -30,9 +31,9 @@ class EnergyProvider:
         )
 
     @property
-    def meters(self):
-        return self.update_meter_list()
-    
+    def session(self):
+        return local_session
+
     @property
     def adapter(self):
         """Give adapter for the provider"""
@@ -56,6 +57,10 @@ class EnergyProvider:
                     f"We do not support: {self.key} as energy provider",
                 )
 
+    @property
+    def meters(self):
+        return self.update_meter_list()
+
     async def update_meter_list(self) -> list[MeterModel]:
         """Uses the adapter's method to get a meter list"""
 
@@ -64,15 +69,16 @@ class EnergyProvider:
         remote_meters: list[MeterCreateDTO] = await self._adapter.fetch_meter_list()
 
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
+            local_meter = meter_crud.get_by_source_id(
+                self._session, meter.source_id)
 
-            match local_meter:
-                case None:
-                    new_meters.append(
-                        meter_crud.create(self._session, meter, self.installation_id)
-                    )
-                case _:
-                    local_meters.append(local_meter)
+            if local_meter:
+                new_meters.append(
+                    meter_crud.create(self._session, meter,
+                                      self.installation_id)
+                )
+            else:
+                local_meters.append(local_meter)
 
         log.info(
             "installation_id: %s | %s remote meter(s) | %s local meter(s) | %s new meter(s)",
@@ -82,7 +88,7 @@ class EnergyProvider:
             len(new_meters),
         )
 
-        return local_meters.append(new_meters)
+        return remote_meters
 
     async def __write_measurements(
         self,
@@ -104,7 +110,8 @@ class EnergyProvider:
         for meausurement in channel_data.measurements:
             # TODO correct execpt and callback
             try:
-                measurement_crud.create(self._session, meausurement, local_channel.id)
+                measurement_crud.create(
+                    self._session, meausurement, local_channel.id)
             except Exception as err:
                 log.critical("%s", err)
                 continue
@@ -138,7 +145,8 @@ class EnergyProvider:
         self,
         meter: MeterModel,
     ):
-        log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
+        log.info("updating measurements for meter: %s id: %s",
+                 meter.name, meter.id)
 
         # NOTE checks only the first channel
         latest_known = measurement_crud.latest_measurement(
@@ -153,7 +161,9 @@ class EnergyProvider:
         )
         for _ in range(num_months):
             await self.get_month_measurements(meter, latest_known)
-            _, days_in_month = monthrange(latest_known.year, latest_known.month)
-            latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
-            
+            _, days_in_month = monthrange(
+                latest_known.year, latest_known.month)
+            latest_known = latest_known.replace(
+                day=days_in_month) + timedelta(days=1)
+
         return {"status": True}

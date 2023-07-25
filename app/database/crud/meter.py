@@ -1,11 +1,12 @@
 from fastapi.encoders import jsonable_encoder
-from app.core.implementations.base_crud import Session, CRUDBase # ,log
+from sqlalchemy.orm import Session
+from app.core.implementations.base_crud import CRUDBase # ,log
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
 
 class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
-    def create(
+    async def create(
         self, session: Session, create_obj: MeterCreateDTO, installation_id: int
     ) -> MeterModel:
         meter_data = jsonable_encoder(create_obj)
@@ -13,7 +14,7 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
 
         return self.commit(session, database_model=MeterModel(**meter_data))
 
-    def get_by_source_id(
+    async def get_by_source_id(
         self, session: Session, source_id: str
     ) -> MeterModel | None:
         return (
