@@ -8,7 +8,7 @@ from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
     def create(
         self, session: Session, create_obj: MeterCreateDTO, installation_id: int
-    ) -> MeterModel:
+    ):
         meter_data = jsonable_encoder(create_obj)
         meter_data["installation_id"] = installation_id
 
@@ -16,7 +16,7 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
 
     def get_by_source_id(
         self, session: Session, source_id: str
-    ) -> MeterModel | None:
+    ):
         return (
             session.query(self.model).filter(self.model.source_id == source_id).first()
         )

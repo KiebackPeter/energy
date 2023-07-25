@@ -1,14 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Optional
-
 import msgspec
 from httpx import AsyncClient
 
 from app.core.error import HTTP_ERROR
-from app.database.models.meter import MeterModel
 from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.measurements import MeasurementCreateDTO
 from app.schemas.meter import MeterCreateDTO
 
 
