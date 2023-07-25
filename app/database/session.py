@@ -1,19 +1,39 @@
-from typing import Any, Generator
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 
 from app.core.settings import env
 
-engine = create_engine(env.db_url + env.db_name)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
+engine = create_engine(env.db_driver + env.db_url + env.db_name)
+async_engine = create_async_engine(
+    env.db_async_driver + env.db_url + env.db_name,
+    echo=True,
+)
 
-def use_db() -> Session:                            # type:ignore
+
+def pg_session():
+    session = sessionmaker(autoflush=False, bind=engine)()
     try:
-        session = SessionLocal()
         yield session
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
     finally:
-        session.close()                             # type: ignore
+        session.close()
+
+
+async def async_pg_session():
+    async_session = async_sessionmaker(bind=async_engine)
+    try:
+        async with async_session.begin() as connection:
+            async with connection.begin() as session:
+                yield connection
+    except Exception as err:
+        await session.rollback()
+        raise err
+    finally:
+        await session.close()

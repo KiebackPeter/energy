@@ -29,11 +29,10 @@ class KenterAdapter(BaseAdapter):
     async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
 
-        remote_meters_request = self.make_request(self.base_url + "/meters")
-        raw_meter_list = self.request
+        raw_meter_list = await self.make_request(self.base_url + "/meters")
         
         meter_objects: list[MeterCreateDTO] = []
-        for raw_meter in await remote_meters_request:
+        for raw_meter in raw_meter_list:
             commodity = self.check_commodity(
                 raw_meter["meteringPoints"][0]["productType"]
             )
