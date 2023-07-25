@@ -21,12 +21,13 @@ services:
       - ./app:/code/app
     depends_on:
       - database
+      - worker
 
   worker:
     build: .
-    command: celery -A app.energy.worker.celery worker --loglevel=info
+    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' -- celery -A app.energy.worker.celery worker --loglevel=info"
     volumes:
-      - ./app:/usr/src/app
+      - ./app:/code/app
     environment:
       - CELERY_BROKER_URL=${BROKER_URL}
       - CELERY_RESULT_BACKEND=${BROKER_URL}

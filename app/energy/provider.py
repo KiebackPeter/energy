@@ -59,8 +59,8 @@ class EnergyProvider:
     async def update_meter_list(self) -> list[MeterModel]:
         """Uses the adapter's method to get a meter list"""
 
-        new_meters = []
-        local_meters = []
+        new_meters: list[MeterCreateDTO] = []
+        local_meters: list[MeterCreateDTO] = []
         remote_meters: list[MeterCreateDTO] = await self._adapter.fetch_meter_list()
 
         for meter in remote_meters:
@@ -82,7 +82,7 @@ class EnergyProvider:
             len(new_meters),
         )
 
-        return new_meters + local_meters
+        return local_meters.append(new_meters)
 
     async def __write_measurements(
         self,
@@ -156,4 +156,4 @@ class EnergyProvider:
             _, days_in_month = monthrange(latest_known.year, latest_known.month)
             latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
             
-        return "done"
+        return {"status": True}

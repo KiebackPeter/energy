@@ -1,4 +1,5 @@
 import time
+from asyncio import get_event_loop
 from celery import Celery
 from app.core.logger import log, env
 from app.database.models.installation import InstallationModel
@@ -18,14 +19,18 @@ def create_task(task_type):
 
 
 @celery.task(name="update_meters")
-def update_meters(provider: EnergyProvider):
+async def update_meters(installation_id: int, name: str, key: str):
+    provider = EnergyProvider(installation_id, name, key)
+
     remote_meters = provider.update_meter_list()
 
     return remote_meters
 
 
 @celery.task(name="update_measurements")
-def update_measurements(provider: EnergyProvider, meters: list[MeterModel]):
+def update_measurements(installation_id: int, name: str, key: str, meters: list[MeterModel]):
+    provider = EnergyProvider(installation_id, name, key)
+
     new_measurements = []
     for meter in meters:
         new_measurements.append(provider.update_meter_measurements(meter))
@@ -36,10 +41,15 @@ def update_measurements(provider: EnergyProvider, meters: list[MeterModel]):
 
 
 @celery.task(name="get_updates")
-async def get_updates(installation_id: int, name: str, key: str):
+def get_updates(installation_id: int, name: str, key: str):
+
     provider = EnergyProvider(installation_id, name, key)
 
-    for meter in await provider.update_meter_list():
-        await provider.update_meter_measurements(meter)
+    loop = get_event_loop()
 
-    return {"updated_installation_id": installation_id}
+    remote_meters = loop.run_until_complete(provider.update_meter_list())
+
+    for meter in remote_meters:
+        loop.create_task(provider.update_meter_measurements(meter))
+
+    return {"status": True}
