@@ -17,12 +17,15 @@ from app.schemas.installation import InstallationUpdateDTO
 def of_user(
     session: Annotated[Session, Depends(use_db)],
     current_user: Annotated[UserModel, Depends(current_active_user)],
+    installation_id: int = None
 ):
-    if current_user.installation_id is None:
-        HTTP_ERROR(400, "You do not have a instalaltion")
+    if not current_user.is_superuser:
+        if current_user.installation_id is None:
+            HTTP_ERROR(400, "You do not have a instalaltion")
+        installation = installation_crud.get(session, id=current_user.installation_id)  
     else:
-        installation = installation_crud.get(session, id=current_user.installation_id)
-        return installation
+        installation = installation_crud.get(session, id=installation_id)
+    return installation
 
 
 def with_owner(
