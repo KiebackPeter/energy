@@ -5,7 +5,7 @@
 
 # from app.main import api
 # from app.core.settings import env
-# from app.database.session import pg_session
+# from app.database.session import use_db
 
 # engine = create_engine(env.DB.url + env.DB.name)
 # TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -15,7 +15,7 @@
 # def client() -> TestClient:
 #     return TestClient(api)
 
-# def override_pg_session():
+# def override_use_db():
 #     connection = engine.connect()
 
 #     transaction = connection.begin()
@@ -30,4 +30,4 @@
 #     transaction.rollback()
 #     connection.close()
 
-# api.dependency_overrides[pg_session] = override_pg_session
+# api.dependency_overrides[use_db] = override_use_db

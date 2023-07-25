@@ -20,12 +20,12 @@ services:
     volumes:
       - ./app:/code/app
     depends_on:
-      - database-dashboard
-      - broker-dashboard
+      - database
+      - worker
 
   worker:
     build: .
-    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=debug"
+    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' -- celery -A app.energy.worker.celery worker --loglevel=info"
     volumes:
       - ./app:/code/app
     environment:
@@ -49,7 +49,7 @@ services:
     volumes:
       - energy-database:/var/lib/postgresql/data
 
-  broker-dashboard:
+  flower:
     build: .
     command: celery --broker=${BROKER_URL} flower --port=5555
     ports:
@@ -58,10 +58,9 @@ services:
       - CELERY_BROKER_URL=${BROKER_URL}
       - CELERY_RESULT_BACKEND=${BROKER_URL}
     depends_on:
-      - broker
       - worker
 
-  database-dashboard:
+  pgadmin:
     image: dpage/pgadmin4
     ports:
       - 8080:80

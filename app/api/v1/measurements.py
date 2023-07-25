@@ -7,7 +7,7 @@ from app.api.dependencies.installation import with_owner
 from app.database.crud.measurement import measurement_crud
 
 from app.database.models.installation import InstallationModel
-from app.database.session import pg_session
+from app.database.session import use_db
 
 router = APIRouter()
 
@@ -29,7 +29,7 @@ def day_measurements(
     month: int,
     day: int,
     installation: Annotated[InstallationModel, Depends(with_owner)],
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
 ):
     measurements = measurement_crud.get_with_date_range(
         session,
@@ -47,7 +47,7 @@ def month_measurements(
     year: int,
     month: int,
     installation: Annotated[InstallationModel, Depends(with_owner)],
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
 ):
     measurements = measurement_crud.get_with_date_range(
         session,

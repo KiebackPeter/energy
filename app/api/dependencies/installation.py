@@ -6,7 +6,7 @@ from app.core.error import HTTP_ERROR
 from app.database.crud.installation import installation_crud ,Session
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import pg_session
+from app.database.session import use_db
 from app.energy.provider import EnergyProvider
 from app.schemas.installation import InstallationUpdateDTO
 
@@ -15,7 +15,7 @@ from app.schemas.installation import InstallationUpdateDTO
 
 
 def of_user(
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation_id: int = None
 ):
@@ -51,7 +51,7 @@ def provider_of_installation(
 
 
 def get_all_installations(
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
     skip: int | None = None,
     limit: int | None = None,
@@ -63,7 +63,7 @@ def get_all_installations(
 
 def get_installation_by_id(
     installation_id: int,
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
 ):
     installation = installation_crud.get(session, id=installation_id)
@@ -74,7 +74,7 @@ def get_installation_by_id(
 def update_installation_by_id(
     installation_id: int,
     update_data: InstallationUpdateDTO,
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
 ):
     installation = installation_crud.get(session, id=installation_id)
@@ -86,7 +86,7 @@ def update_installation_by_id(
 # def add_user_to_installation(
 # #     user_id: int,
 # #     installation=Depends(with_owner),
-# #     session=Depends(pg_session),
+# #     session=Depends(use_db),
 # ):
 # installation_crud.connect_user(session, user_id, installation)
 #     return "not implemented"

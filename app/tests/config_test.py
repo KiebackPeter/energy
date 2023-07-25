@@ -5,7 +5,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.core.settings import env
 from app.database.models.base import BaseModel
-from app.database.session import pg_session
+from app.database.session import use_db
 from app.api.routers import api_router
 
 
@@ -43,7 +43,7 @@ def db_session(app: FastAPI) -> Generator[Session, Any, None]:
 def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None]:
     """
     Create a new FastAPI TestClient that uses the `db_session` fixture to override
-    the `pg_session` dependency that is injected into routes.
+    the `use_db` dependency that is injected into routes.
     """
 
     def _get_test_db():
@@ -52,7 +52,7 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None
         finally:
             pass
 
-    app.dependency_overrides[pg_session] = _get_test_db
+    app.dependency_overrides[use_db] = _get_test_db
     with TestClient(app) as client:
         yield client
 from app.main import api
@@ -75,7 +75,7 @@ def use_test_db():
         db.close() #type: ignore 
 
 
-api.dependency_overrides[pg_session] = use_test_db
+api.dependency_overrides[use_db] = use_test_db
 
 client = TestClient(api)
 

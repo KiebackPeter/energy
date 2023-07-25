@@ -1,5 +1,6 @@
+import time
+from asyncio import get_event_loop
 from celery import Celery
-from asyncio import run, create_task
 from app.core.logger import log, env
 from app.database.models.meter import MeterModel
 
@@ -7,8 +8,7 @@ from app.database.models.meter import MeterModel
 
 from app.energy.provider import EnergyProvider
 
-
-celery = Celery(__name__, broker=env.broker_url, backend=env.broker_url)
+celery = Celery("energy", broker=env.broker_url, backend=env.broker_url)
 
 
 
@@ -34,17 +34,26 @@ def update_measurements(installation_id: int, name: str, key: str, meters: list[
     return new_measurements
 
 
-@celery.task(name="get_updates", ignore_result=True)
+@celery.task(name="get_updates")
 def get_updates(installation_id: int, name: str, key: str):
-    provider = EnergyProvider(installation_id, name, key)
-    background_tasks = set()
-    
-    response = run(provider.update_meter_list(), debug=True)
-    try:
-        for meter in response:
-            create_task(provider.update_meter_measurements(meter))
 
-    except Exception as exception:
-        print(exception)
+    provider = EnergyProvider(installation_id, name, key)
+
+    loop = get_event_loop()
+    remote_meters = loop.run_until_complete(provider.update_meter_list())
+    print(f"remote_meters: {remote_meters}")
+    
+    background_tasks = set()
+
+    for meter in remote_meters:
+        loop.run_until_complete(provider.update_meter_measurements(meter))
+
+        # # Add task to the set. This creates a strong reference.
+        # background_tasks.add(task)
+
+        # # To prevent keeping references to finished tasks forever,
+        # # make each task remove its own reference from the set after
+        # # completion:
+        # add_done_callback(background_tasks.discard)
     
     return {"status": True}

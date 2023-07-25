@@ -7,7 +7,7 @@ from app.api.dependencies.meter import meter_of_installation_by_id
 from app.database.models.channel import ChannelModel
 from app.database.models.meter import MeterModel
 from app.database.crud.channel import channel_crud
-from app.database.session import pg_session
+from app.database.session import use_db
 from app.schemas.channel import ChannelUpdateDTO
 
 router = APIRouter()
@@ -24,7 +24,7 @@ def all_channels(
 def put_channel_qanteon_name(
     updated_obj: ChannelUpdateDTO,
     channel: Annotated[ChannelModel, Depends(channel_of_meter_by_id)],
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
 ):
     updated_channel = channel_crud.update(session, channel, updated_obj)
 

@@ -10,7 +10,7 @@ from app.api.dependencies.user import current_active_user
 from app.core.error import HTTP_ERROR
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import pg_session, async_pg_session
+from app.database.session import use_db
 from app.database.crud.installation import installation_crud
 
 from app.schemas.installation import (
@@ -27,7 +27,7 @@ router = APIRouter()
 def new_installation(
     create_data: InstallationCreateDTO,
     user: Annotated[UserModel, Depends(current_active_user)],
-    session: Annotated[Session, Depends(async_pg_session)],
+    session: Annotated[Session, Depends(use_db)],
 ):
     if user.installation_id and not user.is_superuser:
         HTTP_ERROR(406, "You already have an installation")
@@ -46,7 +46,7 @@ def get_installation(installation: Annotated[InstallationModel, Depends(of_user)
 def put_installation_of_user(
     update_data: InstallationUpdateDTO,
     installation: Annotated[InstallationModel, Depends(with_owner)],
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
 ):
     updated_installation = installation_crud.update(session, installation, update_data)
 

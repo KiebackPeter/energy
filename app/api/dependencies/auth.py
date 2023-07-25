@@ -7,13 +7,13 @@ from app.api.dependencies.token import decode_access_token, encode_access_token,
 from app.core.error import HTTP_ERROR
 from app.core.settings import env
 from app.database.crud.user import user_crud, Session
-from app.database.session import pg_session
+from app.database.session import use_db
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 def create_access_token(
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):  # TODO: token type hinting
     """
@@ -37,7 +37,7 @@ def create_access_token(
 
 
 def get_current_user(
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[Session, Depends(use_db)],
     token: Annotated[str, Depends(oauth2)],
 ):
     token_data = decode_access_token(token)

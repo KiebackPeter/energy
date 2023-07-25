@@ -22,9 +22,6 @@ class env:
 
     db_name: str = getenv("DB_NAME") or "postgres"
     db_driver: str = "postgresql"
-    db_async_driver: str = "postgresql+asyncpg"
     db_host: str = getenv("DB_HOST") or "database"
     db_port: str = getenv("DB_PORT") or "5432"
-    
-    #  prepend driver and append database name
-    db_url: str = f"://{db_user}:{db_password}@{db_host}:{db_port}/"
+    db_url: str = f"{db_driver}://{db_user}:{db_password}@{db_host}:{db_port}/"

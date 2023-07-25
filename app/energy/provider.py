@@ -2,14 +2,16 @@ from calendar import monthrange
 from datetime import datetime, timedelta
 from app.core.error import HTTP_ERROR
 from app.core.logger import log
-
-from app.database.session import async_pg_session
+from app.database.session import SessionLocal
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
 from app.database.models.meter import MeterModel
 from app.energy.adapters import energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
+from app.schemas.meter import MeterCreateDTO
+
+local_session = SessionLocal()
 
 
 class EnergyProvider:
@@ -21,10 +23,14 @@ class EnergyProvider:
         self.api_name = provider_name
         self.api_key = provider_key
 
-        self._session = async_pg_session
+        self._session = self.session
         self._adapter = self.adapter
 
         log.info("energyprovider used: %s", self.api_name)
+
+    @property
+    def session(self):
+        return local_session
 
     @property
     def adapter(self):
@@ -47,23 +53,24 @@ class EnergyProvider:
                     f"We do not support: {self.api_name} as energy provider",
                 )
 
-    async def update_meter_list(self):
+    @property
+    def meters(self):
+        return self.update_meter_list()
+
+    async def update_meter_list(self) -> list[MeterModel]:
         """Uses the adapter's method to get a meter list"""
 
         new_meters: list[MeterModel] = []
         local_meters: list[MeterModel] = []
-        remote_meters = await self._adapter.fetch_meter_list()
+        remote_meters: list[MeterCreateDTO] = await self._adapter.fetch_meter_list()
 
-        self._session()
-    
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(session, meter.source_id)
+            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
 
             if local_meter is None:
-                new_meter = meter_crud.create(
-                    session, meter, self.installation_id
+                new_meters.append(
+                    meter_crud.create(self._session, meter, self.installation_id)
                 )
-                new_meters.append(new_meter)
             else:
                 local_meters.append(local_meter)
 
@@ -74,10 +81,8 @@ class EnergyProvider:
             len(local_meters),
             len(new_meters),
         )
-        if local_meters and new_meters:
-            return local_meters + new_meters
 
-        return list()
+        return local_meters + new_meters
 
     async def __write_measurements(
         self,
