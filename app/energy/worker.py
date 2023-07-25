@@ -35,11 +35,10 @@ async def update_measurements(provider: EnergyProvider, meters: list[MeterModel]
 
 
 @celery.task(name="get_updates")
-async def get_updates(provider: EnergyProvider):
-    
-    remote_meters = await provider.update_meter_list()
+async def get_updates(installation_id: int, name: str, key: str):
+    provider = EnergyProvider(installation_id, name, key)
 
-    for meter in remote_meters:
-        await provider.update_meter_measurements(meter)
+    for meter in await provider.update_meter_list():
+        _ = provider.update_meter_measurements(meter)
 
-    log.info("updated %s meter(s)", len(remote_meters))
+    return {"updated_installation_id": installation_id}

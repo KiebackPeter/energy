@@ -76,7 +76,7 @@ class JoulzAdapter(BaseAdapter):
 
         return measurements_per_channel
 
-    async def fetch_day_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_day_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         # day_before = date - timedelta(days=1)
@@ -85,13 +85,13 @@ class JoulzAdapter(BaseAdapter):
 
         raw_measurements = await self.make_request(
             self.base_url
-            + f"/aggregates/?per=daily&dap={meter.source_id}&begin={formatted_day_before}&end={formatted_day}"
+            + f"/aggregates/?per=daily&dap={source_id}&begin={formatted_day_before}&end={formatted_day}"
             + self.surfix
         )
         # print(raw_measurements)
         return self.format_measurements(raw_measurements)
 
-    async def fetch_month_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_month_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         if date.month < 12:
@@ -104,7 +104,7 @@ class JoulzAdapter(BaseAdapter):
 
         raw_measurements = await self.make_request(
             self.base_url
-            + f"/aggregates/?per=daily&dap={meter.source_id}&begin={formatted_day_before}&end={formatted_day}"
+            + f"/aggregates/?per=daily&dap={source_id}&begin={formatted_day_before}&end={formatted_day}"
             + self.surfix
         )
         # print(raw_measurements)

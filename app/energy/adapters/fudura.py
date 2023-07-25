@@ -41,10 +41,10 @@ class FuduraAdapter(BaseAdapter):
     ) -> list[ChannelWithMeasurements]:
         return
 
-    async def fetch_day_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_day_measurements(self, meter: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
         return self.format_measurements()
 
-    async def fetch_month_measurements(self, meter: MeterModel, date: datetime):
+    async def fetch_month_measurements(self, meter: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
         return self.format_measurements()

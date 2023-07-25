@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from celery.result import AsyncResult
 from pydantic import BaseModel
+from app.database.models.installation import InstallationModel
 from app.energy import worker
 
 from app.api.dependencies.installation import get_all_installations
@@ -15,32 +16,29 @@ router = APIRouter()
 # TODO https://github.com/testdrivenio/fastapi-celery/tree/master
 
 
-class TaskOut(BaseModel):
-    id: str
-    status: str
-
-
-def _to_task_out(req: AsyncResult) -> TaskOut:
-    return TaskOut(id=req.task_id, status=req.status)
+def _to_task_out(req: AsyncResult):
+    return {"id": req.task_id, "status": req.status}
 
 
 @router.get("/{task_id}/status")
-def status(task_id: str) -> TaskOut:
+async def status(task_id: str):
     req = AsyncResult(task_id)
     return _to_task_out(req)
 
 
 @router.get("/updates")
 async def fetch_measurements_for_all_installations(
-    installations=Depends(get_all_installations),
+    installations: list[InstallationModel] = Depends(get_all_installations),
 ):
     tasks = []
 
     for installation in installations:
-        # FIX dont pass model object but dict
-        task = await worker.get_updates.delay(installation)
-        tasks.append(task)
-
+        task = worker.get_updates.delay(
+            installation.id, installation.provider_name, installation.provider_key
+        )
+        tasks.append(task.id)
+    
+    return {"tasks": tasks}
 
 
 @router.get("/fetch/{meter_id}/day/{year}/{month}/{day}")

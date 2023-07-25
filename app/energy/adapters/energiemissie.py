@@ -69,7 +69,7 @@ class EnergiemissieAdapter(BaseAdapter):
 
         return measurements_per_channel
 
-    async def fetch_day_measurements(self, source_id: int, date: datetime):
+    async def fetch_day_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         formatted_day = f"{date.year}/{date.month}/{date.day}"
@@ -79,7 +79,7 @@ class EnergiemissieAdapter(BaseAdapter):
 
         return self.format_measurements(raw_measurements)
 
-    async def fetch_month_measurements(self, source_id: int, date: datetime):
+    async def fetch_month_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         formatted_day = f"{date.year}/{date.month}"

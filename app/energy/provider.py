@@ -6,7 +6,6 @@ from app.database.session import use_db
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
-from app.database.models.installation import InstallationModel
 from app.database.models.meter import MeterModel
 from app.energy.adapters import adapter, energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
@@ -16,43 +15,45 @@ from app.schemas.meter import MeterCreateDTO
 class EnergyProvider:
     """A service to work with different sorts of BaseAdapters"""
 
-    def __init__(self, installation: InstallationModel):
-        self.installation = installation
+    def __init__(self, installation_id: int, provider_name: str, provider_key: str):
+        
+        self.installation_id = installation_id
+        self.name = provider_name
+        self.key = provider_key
+        
         self._session = use_db()
+        self._adapter = self.adapter
 
-        if self.installation.provider_name and self.installation.provider_key:
-            self.adapter = self.__give_adapter()
-
-            log.info(
-                "installation: %s adapter: %s",
-                self.installation.name,
-                self.adapter.__class__.__name__,
-            )
+        log.info(
+            "Energy provider used: %s",
+            self.name
+        )
 
     @property
     def meters(self):
         return self.update_meter_list()
-
-    def __give_adapter(self) -> adapter.BaseAdapter:
+    
+    @property
+    def adapter(self):
         """Give adapter for the provider"""
 
-        match self.installation.provider_name:
+        match self.name:
             case "energiemissie":
                 return energiemissie.EnergiemissieAdapter(
-                    self.installation.provider_name
+                    self.key
                 )
             case "joulz":
-                return joulz.JoulzAdapter(self.installation.provider_name)
+                return joulz.JoulzAdapter(self.key)
             # case "fudura":
             #     return fudura.FuduraAdapter(self.installation.provider_name)
             # case "tums":
             #     return tums.TumsAdapter(self.installation.provider_name)
             case "kenter":
-                return kenter.KenterAdapter(self.installation.provider_name)
+                return kenter.KenterAdapter(self.key)
             case _:
                 return HTTP_ERROR(
                     404,
-                    f"We do not support: {self.installation.provider_name} as energy provider",
+                    f"We do not support: {self.key} as energy provider",
                 )
 
     async def update_meter_list(self) -> list[MeterModel]:
@@ -60,7 +61,7 @@ class EnergyProvider:
 
         new_meters = []
         local_meters = []
-        remote_meters: list[MeterCreateDTO] = await self.adapter.fetch_meter_list()
+        remote_meters: list[MeterCreateDTO] = await self._adapter.fetch_meter_list()
 
         for meter in remote_meters:
             local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
@@ -68,14 +69,14 @@ class EnergyProvider:
             match local_meter:
                 case None:
                     new_meters.append(
-                        meter_crud.create(self._session, meter, self.installation.id)
+                        meter_crud.create(self._session, meter, self.installation_id)
                     )
                 case _:
                     local_meters.append(local_meter)
 
         log.info(
-            "%s: | %s remote meter(s) | %s local meter(s) | %s new meter(s)",
-            self.installation.name,
+            "installation_id: %s | %s remote meter(s) | %s local meter(s) | %s new meter(s)",
+            self.installation_id,
             len(remote_meters),
             len(local_meters),
             len(new_meters),
@@ -113,7 +114,7 @@ class EnergyProvider:
     ) -> list[ChannelWithMeasurements]:
         """Uses the adapter's method to get a measuement list of a day"""
 
-        day_measurements_per_channel = await self.adapter.fetch_day_measurements(
+        day_measurements_per_channel = await self._adapter.fetch_day_measurements(
             meter.source_id, date
         )
         for raw_channel in day_measurements_per_channel:
@@ -125,7 +126,7 @@ class EnergyProvider:
         self, meter: MeterModel, date: datetime
     ) -> list[ChannelWithMeasurements]:
         """Returns measurement objects from a meter on a speficic month"""
-        month_measurements_per_channel = await self.adapter.fetch_month_measurements(
+        month_measurements_per_channel = await self._adapter.fetch_month_measurements(
             meter.source_id, date
         )
         for raw_channel in month_measurements_per_channel:
