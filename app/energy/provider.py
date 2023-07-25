@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from app.core.error import HTTP_ERROR
 from app.core.logger import log
 
-from app.database.session import async_pg_session
+from app.database.session import pg_session
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
@@ -21,7 +21,7 @@ class EnergyProvider:
         self.api_name = provider_name
         self.api_key = provider_key
 
-        self._session = async_pg_session
+        self._session = pg_session
         self._adapter = self.adapter
 
         log.info("energyprovider used: %s", self.api_name)
@@ -57,11 +57,11 @@ class EnergyProvider:
         self._session()
     
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(session, meter.source_id)
+            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
 
             if local_meter is None:
                 new_meter = meter_crud.create(
-                    session, meter, self.installation_id
+                    self._session, meter, self.installation_id
                 )
                 new_meters.append(new_meter)
             else:
