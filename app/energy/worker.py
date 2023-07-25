@@ -42,12 +42,12 @@ def get_updates(installation_id: int, name: str, key: str):
 
     loop = get_event_loop()
     remote_meters = loop.run_until_complete(provider.update_meter_list())
-    print(remote_meters)
+    print(f"remote_meters: {remote_meters}")
     
     background_tasks = set()
 
     for meter in remote_meters:
-        task = loop.create_task(provider.update_meter_measurements(meter))
+        task = loop.run_until_complete(provider.update_meter_measurements(meter))
 
         # Add task to the set. This creates a strong reference.
         background_tasks.add(task)

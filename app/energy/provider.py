@@ -11,7 +11,8 @@ from app.energy.adapters import adapter, energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
 
-local_session =  SessionLocal()
+local_session = SessionLocal()
+
 
 class EnergyProvider:
     """A service to work with different sorts of BaseAdapters"""
@@ -88,7 +89,7 @@ class EnergyProvider:
             len(new_meters),
         )
 
-        return remote_meters
+        return local_meters + new_meters
 
     async def __write_measurements(
         self,

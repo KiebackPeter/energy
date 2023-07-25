@@ -17,7 +17,7 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
     async def get_by_source_id(
         self, session: Session, source_id: str
     ) -> MeterModel | None:
-        return (
+        return await (
             session.query(self.model).filter(self.model.source_id == source_id).first()
         )
 
