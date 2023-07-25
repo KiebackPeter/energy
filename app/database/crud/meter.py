@@ -6,7 +6,7 @@ from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
 
 class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
-    async def create(
+    def create(
         self, session: Session, create_obj: MeterCreateDTO, installation_id: int
     ) -> MeterModel:
         meter_data = jsonable_encoder(create_obj)
@@ -14,10 +14,10 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
 
         return self.commit(session, database_model=MeterModel(**meter_data))
 
-    async def get_by_source_id(
+    def get_by_source_id(
         self, session: Session, source_id: str
     ) -> MeterModel | None:
-        return await (
+        return (
             session.query(self.model).filter(self.model.source_id == source_id).first()
         )
 

@@ -7,7 +7,7 @@ from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
 from app.database.models.meter import MeterModel
-from app.energy.adapters import adapter, energiemissie, joulz, kenter
+from app.energy.adapters import energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
 
@@ -18,18 +18,15 @@ class EnergyProvider:
     """A service to work with different sorts of BaseAdapters"""
 
     def __init__(self, installation_id: int, provider_name: str, provider_key: str):
-
         self.installation_id = installation_id
-        self.name = provider_name
-        self.key = provider_key
+
+        self.api_name = provider_name
+        self.api_key = provider_key
 
         self._session = self.session
         self._adapter = self.adapter
 
-        log.info(
-            "Energy provider used: %s",
-            self.name
-        )
+        log.info("energyprovider used: %s", self.api_name)
 
     @property
     def session(self):
@@ -39,23 +36,21 @@ class EnergyProvider:
     def adapter(self):
         """Give adapter for the provider"""
 
-        match self.name:
+        match self.api_name:
             case "energiemissie":
-                return energiemissie.EnergiemissieAdapter(
-                    self.key
-                )
+                return energiemissie.EnergiemissieAdapter(self.api_key)
             case "joulz":
-                return joulz.JoulzAdapter(self.key)
+                return joulz.JoulzAdapter(self.api_key)
             # case "fudura":
             #     return fudura.FuduraAdapter(self.installation.provider_name)
             # case "tums":
             #     return tums.TumsAdapter(self.installation.provider_name)
             case "kenter":
-                return kenter.KenterAdapter(self.key)
+                return kenter.KenterAdapter(self.api_key)
             case _:
                 return HTTP_ERROR(
                     404,
-                    f"We do not support: {self.key} as energy provider",
+                    f"We do not support: {self.api_name} as energy provider",
                 )
 
     @property
@@ -65,18 +60,16 @@ class EnergyProvider:
     async def update_meter_list(self) -> list[MeterModel]:
         """Uses the adapter's method to get a meter list"""
 
-        new_meters: list[MeterCreateDTO] = []
-        local_meters: list[MeterCreateDTO] = []
+        new_meters: list[MeterModel] = []
+        local_meters: list[MeterModel] = []
         remote_meters: list[MeterCreateDTO] = await self._adapter.fetch_meter_list()
 
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(
-                self._session, meter.source_id)
+            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
 
-            if local_meter:
+            if local_meter is None:
                 new_meters.append(
-                    meter_crud.create(self._session, meter,
-                                      self.installation_id)
+                    meter_crud.create(self._session, meter, self.installation_id)
                 )
             else:
                 local_meters.append(local_meter)
@@ -111,8 +104,7 @@ class EnergyProvider:
         for meausurement in channel_data.measurements:
             # TODO correct execpt and callback
             try:
-                measurement_crud.create(
-                    self._session, meausurement, local_channel.id)
+                measurement_crud.create(self._session, meausurement, local_channel.id)
             except Exception as err:
                 log.critical("%s", err)
                 continue
@@ -146,8 +138,7 @@ class EnergyProvider:
         self,
         meter: MeterModel,
     ):
-        log.info("updating measurements for meter: %s id: %s",
-                 meter.name, meter.id)
+        log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         # NOTE checks only the first channel
         latest_known = measurement_crud.latest_measurement(
@@ -162,9 +153,7 @@ class EnergyProvider:
         )
         for _ in range(num_months):
             await self.get_month_measurements(meter, latest_known)
-            _, days_in_month = monthrange(
-                latest_known.year, latest_known.month)
-            latest_known = latest_known.replace(
-                day=days_in_month) + timedelta(days=1)
+            _, days_in_month = monthrange(latest_known.year, latest_known.month)
+            latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
 
         return {"status": True}

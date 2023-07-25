@@ -1,8 +1,7 @@
 import time
-from asyncio import get_event_loop, create_task
+from asyncio import get_event_loop
 from celery import Celery
 from app.core.logger import log, env
-from app.database.models.installation import InstallationModel
 from app.database.models.meter import MeterModel
 
 # from app.core.logger import log
@@ -47,14 +46,14 @@ def get_updates(installation_id: int, name: str, key: str):
     background_tasks = set()
 
     for meter in remote_meters:
-        task = loop.run_until_complete(provider.update_meter_measurements(meter))
+        loop.run_until_complete(provider.update_meter_measurements(meter))
 
-        # Add task to the set. This creates a strong reference.
-        background_tasks.add(task)
+        # # Add task to the set. This creates a strong reference.
+        # background_tasks.add(task)
 
-        # To prevent keeping references to finished tasks forever,
-        # make each task remove its own reference from the set after
-        # completion:
-        task.add_done_callback(background_tasks.discard)
+        # # To prevent keeping references to finished tasks forever,
+        # # make each task remove its own reference from the set after
+        # # completion:
+        # add_done_callback(background_tasks.discard)
     
     return {"status": True}

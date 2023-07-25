@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from app.core.logger import log
-from app.database.models.meter import MeterModel
 from app.energy.adapters.adapter import BaseAdapter
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.measurements import MeasurementCreateDTO
@@ -30,9 +29,11 @@ class KenterAdapter(BaseAdapter):
     async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
 
-        raw_meter_list = await self.make_request(self.base_url + "/meters")
+        remote_meters_request = self.make_request(self.base_url + "/meters")
+        raw_meter_list = self.request
+        
         meter_objects: list[MeterCreateDTO] = []
-        for raw_meter in raw_meter_list:
+        for raw_meter in await remote_meters_request:
             commodity = self.check_commodity(
                 raw_meter["meteringPoints"][0]["productType"]
             )
