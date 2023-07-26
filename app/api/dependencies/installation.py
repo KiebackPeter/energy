@@ -19,14 +19,16 @@ async def of_user(
     session: Annotated[AsyncSession, Depends(async_pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation_id: int | None = None,
-)-> (ScalarResult[InstallationModel] | None):
+):
     if current_user.is_superuser and installation_id:
-        return await installation_crud.get_with_meters(session, installation_id)
+        installation = await installation_crud.get_with_meters(session, installation_id)
+        return installation.first()
 
     elif current_user.installation_id:
-        return await installation_crud.get_with_meters(
+        installation = await installation_crud.get_with_meters(
             session, current_user.installation_id
         )
+        return installation.first()
 
 
 async def with_owner(

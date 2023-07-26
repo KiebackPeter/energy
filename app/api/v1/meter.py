@@ -1,6 +1,5 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from sqlalchemy import ScalarResult
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies.installation import with_owner
@@ -28,9 +27,9 @@ def new_meter(
 
 @router.get("/all")
 def all_installation_meters(
-    installation: Annotated[ScalarResult, Depends(with_owner)],
+    installation: Annotated[InstallationModel, Depends(with_owner)],
 ):
-    return installation.first()
+    return installation.meters
 
 
 # TODO get all channels from MeterModel relationship

@@ -1,6 +1,5 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from sqlalchemy import ScalarResult
 
 from app.api.dependencies.installation import (
     of_user,
@@ -37,8 +36,8 @@ async def new_installation(
 
 
 @router.get("")
-def get_installation(installation: Annotated[ScalarResult, Depends(of_user)]):
-    return installation.first()
+def get_installation(installation: Annotated[InstallationModel, Depends(of_user)]):
+    return installation
 
 
 @router.put("", response_model=InstallationPublic)
