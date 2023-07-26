@@ -23,7 +23,7 @@ class CRUDInstallation(
 
     async def get_with_meters(self, session: AsyncSession, installaiton_id: int):
         return await session.scalars(
-            select(self.model).options(selectinload(self.model.meters))
+            select(self.model).filter(self.model.id == installaiton_id).options(selectinload(self.model.meters))
         )
 
 

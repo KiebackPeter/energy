@@ -26,10 +26,12 @@ def new_meter(
 
 
 @router.get("/all")
-def all_installation_meters(
+async def all_installation_meters(
+    session: Annotated[AsyncSession, Depends(pg_session)],
     installation: Annotated[InstallationModel, Depends(with_owner)],
 ):
-    return installation.meters
+    return meter_crud.get_with_channels(session)
+
 
 
 # TODO get all channels from MeterModel relationship

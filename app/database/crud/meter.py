@@ -1,4 +1,6 @@
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
@@ -12,7 +14,12 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
         meter_data["installation_id"] = installation_id
 
         return self.do_create(session, meter_data)
-
+    
+    async def get_with_channels(self, session: AsyncSession,):
+        return await session.scalars(
+            select(self.model).options(selectinload(self.model.channels))
+        )
+    
     def get_by_source_id(
         self, session: AsyncSession, source_id: str
     ):
