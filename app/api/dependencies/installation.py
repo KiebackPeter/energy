@@ -1,12 +1,13 @@
 from typing import Annotated
 from fastapi import Depends
+from sqlalchemy import ScalarResult
 
 from app.api.dependencies.user import current_active_superuser, current_active_user
 from app.core.error import HTTP_ERROR
-from app.database.crud.installation import installation_crud ,Session
+from app.database.crud.installation import installation_crud
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import pg_session
+from app.database.session import async_pg_session, AsyncSession
 from app.energy.provider import EnergyProvider
 from app.schemas.installation import InstallationUpdateDTO
 
@@ -14,21 +15,21 @@ from app.schemas.installation import InstallationUpdateDTO
 # Guard dependencies
 
 
-def of_user(
-    session: Annotated[Session, Depends(pg_session)],
+async def of_user(
+    session: Annotated[AsyncSession, Depends(async_pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_user)],
-    installation_id: int = None
-):
-    if not current_user.is_superuser:
-        if current_user.installation_id is None:
-            HTTP_ERROR(400, "You do not have a instalaltion")
-        installation = installation_crud.get(session, id=current_user.installation_id)  
-    else:
-        installation = installation_crud.get(session, id=installation_id)
-    return installation
+    installation_id: int | None = None,
+)-> (ScalarResult[InstallationModel] | None):
+    if current_user.is_superuser and installation_id:
+        return await installation_crud.get_with_meters(session, installation_id)
+
+    elif current_user.installation_id:
+        return await installation_crud.get_with_meters(
+            session, current_user.installation_id
+        )
 
 
-def with_owner(
+async def with_owner(
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation: Annotated[InstallationModel, Depends(of_user)],
 ):
@@ -51,7 +52,7 @@ def provider_of_installation(
 
 
 def get_all_installations(
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[AsyncSession, Depends(async_pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
     skip: int | None = None,
     limit: int | None = None,
@@ -63,7 +64,7 @@ def get_all_installations(
 
 def get_installation_by_id(
     installation_id: int,
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[AsyncSession, Depends(async_pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
 ):
     installation = installation_crud.get(session, id=installation_id)
@@ -74,7 +75,7 @@ def get_installation_by_id(
 def update_installation_by_id(
     installation_id: int,
     update_data: InstallationUpdateDTO,
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[AsyncSession, Depends(async_pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
 ):
     installation = installation_crud.get(session, id=installation_id)
@@ -86,7 +87,7 @@ def update_installation_by_id(
 # def add_user_to_installation(
 # #     user_id: int,
 # #     installation=Depends(with_owner),
-# #     session=Depends(pg_session),
+# #     session=Depends(async_pg_session),
 # ):
 # installation_crud.connect_user(session, user_id, installation)
 #     return "not implemented"

@@ -17,7 +17,7 @@ def new_user(
     create_data: UserCreateDTO,
     session: Annotated[Session, Depends(pg_session)],
 ):
-    email_check = user_crud.get_by_email(session, email=create_data.email)
+    email_check = user_crud.get_credentials(session, email=create_data.email)
     if email_check:
         HTTP_ERROR(400, "This email already registered to a user")
 

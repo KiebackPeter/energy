@@ -1,8 +1,7 @@
 from sqlalchemy import PrimaryKeyConstraint, UniqueConstraint, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.implementations.base_model import BaseModel
-from app.database.models.channel import ChannelModel
 
 
 class MeasurementModel(BaseModel):
@@ -17,3 +16,5 @@ class MeasurementModel(BaseModel):
     channel_id: Mapped[int] = mapped_column(ForeignKey("channel.id"), index=True)
     value: Mapped[float] = mapped_column()
     accumulated: Mapped[float | None] = mapped_column()
+
+    channel: Mapped["ChannelModel"] = relationship(back_populates="measurements")

@@ -2,11 +2,12 @@ from typing import Any, Dict, Union
 from fastapi.encoders import jsonable_encoder
 
 from passlib.context import CryptContext
+from sqlalchemy import select
 
 from app.core.error import HTTP_ERROR
-from app.core.implementations.base_crud import Session, CRUDBase # ,log
 from app.database.models.user import UserModel
 from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
+from app.core.implementations.base_crud import AsyncSession, CRUDBase # ,log
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -20,17 +21,13 @@ def get_password_hash(password: str) -> str:
 
 
 class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
-    def create(self, session: Session, create_obj: UserCreateDTO) -> UserModel:
-        return self.commit(
-            session,
-            database_model=UserModel(
-                full_name=create_obj.full_name,
-                email=create_obj.email,
-                hashed_password=get_password_hash(create_obj.password),
-                is_superuser=False,
-                installation_id=None,
-            ),
-        )
+    async def create(self, session: AsyncSession, create_obj: UserCreateDTO):
+        user_data = jsonable_encoder(create_obj)
+        user_data["hashed_password"] = get_password_hash(create_obj.password)
+        user_data["is_superuser"] = False
+        user_data["installation_id"] = None
+
+        return await self.do_create(session,user_data)
 
     def is_active(self, user: UserModel) -> bool:
         return user.is_active
@@ -38,24 +35,26 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
     def is_superuser(self, user: UserModel) -> bool:
         return user.is_superuser
 
-    def get_by_email(self, session: Session, email: str) -> UserModel | None:
-        return session.query(UserModel).filter(UserModel.email == email).first()
+    async def get_credentials(self, session: AsyncSession, email: str):
+        return await session.scalar(
+        select(self.model).filter(self.model.email == email)
+        )
 
-    def authenticate(
-        self, session: Session, email: str, password: str
-    ) -> UserModel | None:
-        user = self.get_by_email(session, email=email)
-        if not user:
-            HTTP_ERROR(400, "Incorrect email or password")
+    async def authenticate(
+        self, session: AsyncSession, email: str, password: str
+    ):
+        user = await self.get_credentials(session, email=email)
+        if user is None:
+            HTTP_ERROR(400, "Incorrect email")
 
         elif not verify_password(password, user.hashed_password):
-            HTTP_ERROR(400, "Incorrect email or password")
+            HTTP_ERROR(400, "Incorrect email and password")
 
         return user
 
     def update_self(
         self,
-        session: Session,
+        session: AsyncSession,
         model: UserModel,
         update_obj: Union[UserUpdateSelfDTO, Dict[str, Any]],
     ):

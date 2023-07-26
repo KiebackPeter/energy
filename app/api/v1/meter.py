@@ -1,6 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
+from sqlalchemy import ScalarResult
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies.installation import with_owner
 
 from app.api.dependencies.meter import meter_of_installation_by_id
@@ -17,18 +19,18 @@ router = APIRouter()
 def new_meter(
     create_data: MeterCreateDTO,
     installation: Annotated[InstallationModel, Depends(with_owner)],
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[AsyncSession, Depends(pg_session)],
 ):
     meter = meter_crud.create(session, create_data, installation.id)
 
-    return meter.__dict__
+    return meter
 
 
 @router.get("/all")
 def all_installation_meters(
-    installation: Annotated[InstallationModel, Depends(with_owner)],
+    installation: Annotated[ScalarResult, Depends(with_owner)],
 ):
-    return installation.meters
+    return installation.first()
 
 
 # TODO get all channels from MeterModel relationship
@@ -43,7 +45,7 @@ def get_meter_by_id(
 def put_meter_by_id(
     update_data: MeterUpdateDTO,
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
-    session: Annotated[Session, Depends(pg_session)],
+    session: Annotated[AsyncSession, Depends(pg_session)],
 ):
     updated_meter = meter_crud.update(session, meter, update_data)
 

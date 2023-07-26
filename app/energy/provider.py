@@ -21,7 +21,7 @@ class EnergyProvider:
         self.api_name = provider_name
         self.api_key = provider_key
 
-        self._session = pg_session
+        self._session = pg_session()
         self._adapter = self.adapter
 
         log.info("energyprovider used: %s", self.api_name)
@@ -54,7 +54,6 @@ class EnergyProvider:
         local_meters: list[MeterModel] = []
         remote_meters = await self._adapter.fetch_meter_list()
 
-        self._session()
     
         for meter in remote_meters:
             local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)

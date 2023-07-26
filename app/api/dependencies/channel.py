@@ -3,10 +3,10 @@ from fastapi import Depends
 from app.api.dependencies.installation import of_user
 
 from app.core.error import HTTP_ERROR
-from app.database.crud.channel import channel_crud, Session
+from app.database.crud.channel import channel_crud
 from app.database.models.channel import ChannelModel
 from app.database.models.installation import InstallationModel
-from app.database.session import pg_session
+from app.database.session import pg_session, Session
 
 
 # def create_channel(

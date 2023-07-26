@@ -26,7 +26,7 @@ from app.energy.provider import EnergyProvider
 
 
 
-async def sync_installations(session: Session, tasks: BackgroundTasks):
+async def sync_installations(session: AsyncSession, tasks: BackgroundTasks):
     yesterday = datetime.today() - timedelta(days=1)
     all_installations = installation_crud.get_multi(session)
 

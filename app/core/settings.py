@@ -8,7 +8,7 @@ load_dotenv()
 
 @dataclass
 class env:
-    app_log_level: str = getenv("API_LOG_LEVEL") or "DEBUG"
+    app_log_level: str = getenv("API_LOG_LEVEL") or "INFO"
     broker_url: str = getenv("BROKER_URL") or "redis://broker:6379"
 
     token_expire_minutes: str = getenv("TOKEN_EXPIRE_MINUTES")  # type: ignore
@@ -23,7 +23,7 @@ class env:
     db_name: str = getenv("DB_NAME") or "postgres"
     db_driver: str = "postgresql"
     db_async_driver: str = "postgresql+asyncpg"
-    db_host: str = getenv("DB_HOST") or "database"
+    db_host: str = getenv("DB_HOST") or "localhost"
     db_port: str = getenv("DB_PORT") or "5432"
     
     #  prepend driver and append database name
