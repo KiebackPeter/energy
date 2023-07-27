@@ -1,10 +1,10 @@
-from typing import Any
 
 from sqlalchemy.orm import DeclarativeBase, declared_attr
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
 
-class BaseModel(DeclarativeBase):
-    id: Any
+class BaseModel(AsyncAttrs, DeclarativeBase):
+    id: int
     __name__: str
 
     # Generate __tablename__ automatically

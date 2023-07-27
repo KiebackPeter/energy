@@ -40,9 +40,7 @@ async def pg_session():
 async def async_pg_session():
     session = async_scoped_session(async_session_factory, scopefunc=current_task)
     try:
-        async with session() as transaction:
-            yield transaction
-
+        return session()
     except Exception as err:
         await session.rollback()
         raise err
