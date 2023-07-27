@@ -4,9 +4,9 @@ from app.schemas.meter import MeterInBD, BaseModel
 class InstallationPublic(BaseModel):
     name: str
     owner_email: str
-    contracted_power_kw: int | None
-    contracted_power_m3: int | None
-    contracted_power_l: int | None
+    contracted_power_kw: int | None = None
+    contracted_power_m3: int | None = None
+    contracted_power_l: int | None = None
 
 
 class InstallationProvider(InstallationPublic):
@@ -17,11 +17,11 @@ class InstallationCreateDTO(InstallationProvider):
     pass
 
 
-class InstallationUpdateDTO(InstallationCreateDTO):
-    name: str | None
-    contracted_power_kw: int | None
-    contracted_power_m3: int | None
-    contracted_power_l: int | None
+class InstallationUpdateDTO(BaseModel):
+    name: str | None = None
+    contracted_power_kw: int | None = None
+    contracted_power_m3: int | None = None
+    contracted_power_l: int | None = None
 
 
 class InstallationInDB(InstallationCreateDTO):

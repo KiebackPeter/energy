@@ -26,13 +26,17 @@ router = APIRouter()
 async def new_installation(
     create_data: InstallationCreateDTO,
     user: Annotated[UserModel, Depends(current_active_user)],
-    session: Annotated[AsyncSession, Depends(async_pg_session)],
+    session: Annotated[Session, Depends(pg_session)],
 ):
     if user.installation_id and not user.is_superuser:
         HTTP_ERROR(406, "You already have an installation")
 
-    return await installation_crud.create(session, create_data, user)
-
+    new_installation = installation_crud.create(session, create_data, user.email)
+    #  BUG: now only sets owner email on installation
+    #       need to set installation id on user for member check
+    user.installation_id = new_installation.id
+    session.commit()
+    return new_installation
 
 
 @router.get("")

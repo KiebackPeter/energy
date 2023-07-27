@@ -1,13 +1,14 @@
 from typing import Annotated
 from fastapi import Depends
 from sqlalchemy import ScalarResult
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.user import current_active_superuser, current_active_user
 from app.core.error import HTTP_ERROR
 from app.database.crud.installation import installation_crud
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import async_pg_session, AsyncSession
+from app.database.session import async_pg_session
 from app.energy.provider import EnergyProvider
 from app.schemas.installation import InstallationUpdateDTO
 
@@ -20,15 +21,15 @@ async def of_user(
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation_id: int | None = None,
 ):
-    if current_user.is_superuser and installation_id:
-        installation = await installation_crud.get_with_meters(session, installation_id)
-        return installation.first()
+    if installation_id and current_user.is_superuser: 
+        installation = await installation_crud.get(session, installation_id)
+        return installation
 
     elif current_user.installation_id:
-        installation = await installation_crud.get_with_meters(
+        installation = await installation_crud.get(
             session, current_user.installation_id
         )
-        return installation.first()
+        return installation
 
 
 async def with_owner(

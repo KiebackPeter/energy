@@ -10,22 +10,26 @@ from app.schemas.installation import InstallationCreateDTO, InstallationUpdateDT
 class CRUDInstallation(
     CRUDBase[InstallationModel, InstallationCreateDTO, InstallationUpdateDTO]
 ):
-    async def create(
+    def create(
         self,
         session: AsyncSession,
         create_obj: InstallationCreateDTO,
-        current_user: UserModel,
+        owner_email: str,
     ):
         installation_data = jsonable_encoder(create_obj)
-        installation_data["owner_email"] = current_user.email
+        installation_data["owner_email"] = owner_email
 
-        result = await self.do_create(session, installation_data)
+        new_installation = session.scalar(
+            insert(self.model).values(installation_data).returning(self.model)
+        )
 
-        return result.first()
+        return new_installation
 
-    async def get_with_meters(self, session: AsyncSession, installaiton_id: int):
-        return await session.scalars(
-            select(self.model).filter(self.model.id == installaiton_id).options(selectinload(self.model.meters))
+    def get_with_meters(self, session: AsyncSession, installaiton_id: int):
+        return session.scalars(
+            select(self.model)
+            .filter(self.model.id == installaiton_id)
+            .options(selectinload(self.model.meters))
         )
 
 
