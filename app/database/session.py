@@ -25,7 +25,7 @@ async_engine = create_async_engine(
 async_session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
 
 
-def pg_session():
+async def pg_session():
     session = scoped_session(session_factory)
     try:
         yield session()
@@ -42,7 +42,6 @@ async def async_pg_session():
     try:
         async with session() as transaction:
             yield transaction
-            await session.commit()
 
     except Exception as err:
         await session.rollback()

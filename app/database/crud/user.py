@@ -2,12 +2,13 @@ from typing import Any, Dict, Union
 from fastapi.encoders import jsonable_encoder
 
 from passlib.context import CryptContext
-from sqlalchemy import select
+from sqlalchemy import select, insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.error import HTTP_ERROR
 from app.database.models.user import UserModel
 from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
-from app.core.implementations.base_crud import AsyncSession, CRUDBase # ,log
+from app.core.implementations.base_crud import CRUDBase # ,log
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,13 +22,22 @@ def get_password_hash(password: str) -> str:
 
 
 class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
-    async def create(self, session: AsyncSession, create_obj: UserCreateDTO):
+    def create(self, session: AsyncSession, create_obj: UserCreateDTO):
+        
         user_data = jsonable_encoder(create_obj)
+        del user_data["password"]
         user_data["hashed_password"] = get_password_hash(create_obj.password)
-        user_data["is_superuser"] = False
-        user_data["installation_id"] = None
 
-        return await self.do_create(session,user_data)
+        return session.scalar(
+            insert(self.model)
+                .values(user_data)
+                .returning(self.model)
+        )
+
+    def get_credentials(self, session: AsyncSession, email: str):
+        return session.scalars(
+        select(self.model).where(self.model.email == email)
+        )
 
     def is_active(self, user: UserModel) -> bool:
         return user.is_active
@@ -35,15 +45,13 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
     def is_superuser(self, user: UserModel) -> bool:
         return user.is_superuser
 
-    async def get_credentials(self, session: AsyncSession, email: str):
-        return await session.scalar(
-        select(self.model).filter(self.model.email == email)
-        )
 
     async def authenticate(
         self, session: AsyncSession, email: str, password: str
     ):
-        user = await self.get_credentials(session, email=email)
+        result = await self.get_credentials(session, email=email)
+        user = result.one()
+        
         if user is None:
             HTTP_ERROR(400, "Incorrect email")
 

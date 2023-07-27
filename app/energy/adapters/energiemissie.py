@@ -82,9 +82,9 @@ class EnergiemissieAdapter(BaseAdapter):
     async def fetch_month_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
-        formatted_day = f"{date.year}/{date.month}"
+        formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
-            f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_day}"
+            f"{self.base_url}/measurements/{source_id}/types/month/months/{formatted_month}"
         )
 
         return self.format_measurements(raw_measurements)

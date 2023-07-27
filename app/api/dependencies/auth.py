@@ -41,5 +41,4 @@ async def get_current_user(
     token: Annotated[str, Depends(oauth2)],
 ):
     token_data = decode_access_token(token)
-    current_user = await user_crud.get(session, id=token_data.sub)  # type: ignore
-    return current_user
+    return await user_crud.get(session, id=token_data.sub)  # type: ignore

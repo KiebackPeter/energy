@@ -2,7 +2,7 @@ from typing import Any, Dict, Generic, List, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel as DTO
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 from asyncpg import UniqueViolationError
 
 # from sqlalchemy.orm import Session
@@ -28,22 +28,23 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
         """
         self.model = model
 
-    async def do_create(
+    async def do_create( # only use refrease
         self, session: AsyncSession, create_obj: CreateDTO
     ) -> DatabaseModel:
         try:
-            return await session.scalar(
-                insert(self.model).values(**create_obj).return_defaults()
+            result = session.scalar(
+                insert(self.model).values(create_obj).returning(self.model.id)
             )
+            print("NEW DATABASE OBJ:", result)
+            return await session.refresh(result)
+
         except UniqueViolationError as err:
             return err
 
-    async def get(self, session: AsyncSession, id: int):
-        result = await session.scalar(
-            select(self.model).filter(self.model.id == id).limit(1)
+    def get(self, session: AsyncSession, id: int):
+        return session.scalar(
+            select(self.model).where(self.model.id == id).limit(1)
         )
-        await session.refresh(result)
-        return result
 
     async def get_multi(
         self,
@@ -61,7 +62,7 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
 
     def update(
         self,
-        session: AsyncSessionTransaction,
+        session: AsyncSession,
         database_model: DatabaseModel,
         update_obj: Union[UpdateDTO, Dict[str, Any]],
     ) -> DatabaseModel:
@@ -76,4 +77,7 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
             if field in update_data:
                 setattr(database_model, field, update_data[field])
 
-        return self.refresh(session, database_model)
+        session.scalar(
+            update(self.model), [database_model.__dict__]
+        )
+        return database_model

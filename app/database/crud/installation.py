@@ -1,5 +1,5 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.orm import selectinload
 from app.core.implementations.base_crud import AsyncSession, CRUDBase  # ,log
 from app.database.models.installation import InstallationModel
@@ -19,7 +19,9 @@ class CRUDInstallation(
         installation_data = jsonable_encoder(create_obj)
         installation_data["owner_email"] = current_user.email
 
-        return await self.do_create(session, installation_data)
+        result = await self.do_create(session, installation_data)
+
+        return result.first()
 
     async def get_with_meters(self, session: AsyncSession, installaiton_id: int):
         return await session.scalars(
