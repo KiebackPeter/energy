@@ -35,7 +35,6 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
             result = session.scalar(
                 insert(self.model).values(create_obj).returning(self.model.id)
             )
-            print("NEW DATABASE OBJ:", result)
             return await session.refresh(result)
 
         except UniqueViolationError as err:
@@ -63,9 +62,14 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
     def update(
         self,
         session: AsyncSession,
-        database_model: DatabaseModel,
-        update_obj: Union[UpdateDTO, Dict[str, Any]],
+        database_model: DatabaseModel | Dict[str, Any],
+        update_obj: UpdateDTO | Dict[str, Any],
     ) -> DatabaseModel:
+
+        if isinstance(database_model, dict):
+            del database_model["_sa_instance_state"]
+            database_model = self.model(**database_model)
+
         obj = jsonable_encoder(database_model)
 
         if isinstance(update_obj, dict):

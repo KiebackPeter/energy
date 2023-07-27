@@ -34,8 +34,8 @@ async def new_installation(
     new_installation = installation_crud.create(session, create_data, user.email)
     #  BUG: now only sets owner email on installation
     #       need to set installation id on user for member check
-    user.installation_id = new_installation.id
-    session.commit()
+    # user.installation_id = new_installation.id
+    # session.commit()
     return new_installation
 
 

@@ -21,18 +21,19 @@ async def of_user(
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation_id: int | None = None,
 ):
+    # BUG doesnt pick up installation id?
     if installation_id and current_user.is_superuser: 
         installation = await installation_crud.get(session, installation_id)
-        return installation
+        return installation.first()
 
     elif current_user.installation_id:
-        installation = await installation_crud.get(
+        installation = await installation_crud.get_with_meters(
             session, current_user.installation_id
         )
-        return installation
+        return installation.first()
 
 
-async def with_owner(
+def with_owner(
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation: Annotated[InstallationModel, Depends(of_user)],
 ):
