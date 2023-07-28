@@ -1,7 +1,7 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, insert
-from sqlalchemy.orm import selectinload
-from app.core.implementations.base_crud import AsyncSession, CRUDBase  # ,log
+from sqlalchemy.orm import selectinload, Session
+from app.core.implementations.base_crud import Session, CRUDBase  # ,log
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
 from app.schemas.installation import InstallationCreateDTO, InstallationUpdateDTO
@@ -12,7 +12,7 @@ class CRUDInstallation(
 ):
     def create(
         self,
-        session: AsyncSession,
+        session: Session,
         create_obj: InstallationCreateDTO,
         owner_email: str,
     ):
@@ -25,7 +25,7 @@ class CRUDInstallation(
 
         return new_installation
 
-    def get_with_meters(self, session: AsyncSession, installaiton_id: int):
+    def get_with_meters(self, session: Session, installaiton_id: int):
         return session.scalars(
             select(self.model)
             .filter(self.model.id == installaiton_id)
@@ -35,7 +35,7 @@ class CRUDInstallation(
 
 # TODO connect multiple users to an installation
 # def connect_user(
-#     self, session: AsyncSession, user_id: int, installation, current_user: UserModel
+#     self, session: Session, user_id: int, installation, current_user: UserModel
 # ):
 #     user = session.query(UserModel).filter( UserModel.id == user_id).first()
 #     installation.users.append(user)

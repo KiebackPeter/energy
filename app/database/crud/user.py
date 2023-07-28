@@ -3,12 +3,11 @@ from fastapi.encoders import jsonable_encoder
 
 from passlib.context import CryptContext
 from sqlalchemy import select, insert
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.error import HTTP_ERROR
 from app.database.models.user import UserModel
 from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
-from app.core.implementations.base_crud import CRUDBase # ,log
+from app.core.implementations.base_crud import Session, CRUDBase # ,log
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -22,7 +21,7 @@ def get_password_hash(password: str) -> str:
 
 
 class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
-    def create(self, session: AsyncSession, create_obj: UserCreateDTO):
+    def create(self, session: Session, create_obj: UserCreateDTO):
         
         user_data = jsonable_encoder(create_obj)
         del user_data["password"]
@@ -34,10 +33,10 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
                 .returning(self.model)
         )
 
-    def get_credentials(self, session: AsyncSession, email: str):
+    def get_credentials(self, session: Session, email: str):
         return session.scalars(
         select(self.model).where(self.model.email == email)
-        )
+        ).first()
 
     def is_active(self, user: UserModel) -> bool:
         return user.is_active
@@ -46,11 +45,10 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
         return user.is_superuser
 
 
-    async def authenticate(
-        self, session: AsyncSession, email: str, password: str
+    def authenticate(
+        self, session: Session, email: str, password: str
     ):
-        result = await self.get_credentials(session, email=email)
-        user = result.one()
+        user = self.get_credentials(session, email=email)
         
         if user is None:
             HTTP_ERROR(400, "Incorrect email")
@@ -62,7 +60,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
 
     def update_self(
         self,
-        session: AsyncSession,
+        session: Session,
         model: UserModel,
         update_obj: Union[UserUpdateSelfDTO, Dict[str, Any]],
     ):

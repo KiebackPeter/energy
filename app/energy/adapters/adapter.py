@@ -35,11 +35,11 @@ class BaseAdapter(ABC):
                 return [{"unhandled exception": response}]
 
     @abstractmethod
-    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
+    def fetch_meter_list(self) -> list[MeterCreateDTO]:
         pass
 
     @abstractmethod
-    async def fetch_day_measurements(
+    def fetch_day_measurements(
         self, source_id: str, date: datetime
     ) -> list[ChannelWithMeasurements]:
         pass

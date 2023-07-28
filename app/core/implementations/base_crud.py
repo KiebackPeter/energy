@@ -6,7 +6,7 @@ from sqlalchemy import insert, select, update
 from asyncpg import UniqueViolationError
 
 # from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
+from sqlalchemy.orm import Session
 from app.core.logger import log  # create cutstom crud logger
 from app.core.error import HTTP_ERROR
 from app.core.implementations.base_model import BaseModel
@@ -28,30 +28,33 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
         """
         self.model = model
 
-    async def do_create( # only use refrease
-        self, session: AsyncSession, create_obj: CreateDTO
-    ) -> DatabaseModel:
-        try:
-            result = session.scalar(
-                insert(self.model).values(create_obj).returning(self.model.id)
-            )
-            return await session.refresh(result)
+    # async def do_create( # only use refrease
+    #     self, session: Session, create_obj: CreateDTO
+    # ) -> DatabaseModel:
+    #     try:
+    #         result = session.execute(
+    #             insert(self.model).values(**create_obj).returning(self.model.id)
+    #         )
+    #         session.commit()
+    #         return result.scalar_one()
 
-        except UniqueViolationError as err:
-            return err
+    #     except UniqueViolationError as err:
+    #         return err
 
-    def get(self, session: AsyncSession, id: int):
-        return session.scalar(
-            select(self.model).where(self.model.id == id).limit(1)
-        )
+    def get(self, session: Session, id: int):
+        result = session.scalars(
+            select(self.model)
+            .filter_by(id = id)
+        ).one_or_none()
+        return result
 
     async def get_multi(
         self,
-        session: AsyncSession,
+        session: Session,
         skip: int | None = 0,
         limit: int | None = 100,
     ):
-        database_models = await session.scalars(
+        database_models = session.scalars(
             select(self.model).offset(skip).limit(limit)
         )
         if not database_models.all():
@@ -61,7 +64,7 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
 
     def update(
         self,
-        session: AsyncSession,
+        session: Session,
         database_model: DatabaseModel | Dict[str, Any],
         update_obj: UpdateDTO | Dict[str, Any],
     ) -> DatabaseModel:
@@ -82,6 +85,6 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
                 setattr(database_model, field, update_data[field])
 
         session.scalar(
-            update(self.model), [database_model.__dict__]
+            update(self.model).values(database_model.__dict__)
         )
         return database_model

@@ -1,7 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies.installation import of_user, with_owner
 
 from app.api.dependencies.meter import meter_of_installation_by_id
@@ -34,20 +33,20 @@ def all_installation_meters(
 
 
 @router.get("/{meter_id}")
-async def get_meter_by_id(
+def get_meter_by_id(
     session: Annotated[Session, Depends(pg_session)],
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
 ):
 
-    return await meter_crud.get_by_id_with_channels(session, meter.id)
+    return meter_crud.get_by_id_with_channels(session, meter.id)
 
 @router.get("/{meter_id}/channels")
-async def all_meter_channels(
+def all_meter_channels(
     session: Annotated[Session, Depends(pg_session)],
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
 ):
     channels = meter_crud.get_by_id_with_channels(session, meter.id)
-    return channels.first()
+    return channels
 
 @router.put("/{meter_id}", response_model=MeterPublic)
 def put_meter_by_id(

@@ -3,12 +3,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.database.models.channel import ChannelModel
 from app.schemas.channel import ChannelCreateDTO, ChannelUpdateDTO
-from app.core.implementations.base_crud import log, AsyncSession, CRUDBase  # ,log
+from app.core.implementations.base_crud import log, Session, CRUDBase  # ,log
 
 
 class CRUDChannel(CRUDBase[ChannelModel, ChannelCreateDTO, ChannelUpdateDTO]):
     async def create(
-        self, session: AsyncSession, create_obj: ChannelCreateDTO, meter_id: int
+        self, session: Session, create_obj: ChannelCreateDTO, meter_id: int
     ):
         channel_data = jsonable_encoder(create_obj)
         channel_data["meter_id"] = meter_id
@@ -16,7 +16,7 @@ class CRUDChannel(CRUDBase[ChannelModel, ChannelCreateDTO, ChannelUpdateDTO]):
         return await self.refresh(session, database_model=ChannelModel(**channel_data))
 
     def get_by_channel_name_and_meter(
-        self, session: AsyncSession, channel_name: str, meter_id: int
+        self, session: Session, channel_name: str, meter_id: int
     ):
         channel = (
             session.query(self.model)

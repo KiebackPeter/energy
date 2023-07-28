@@ -1,9 +1,9 @@
 
 from sqlalchemy.orm import DeclarativeBase, declared_attr
-from sqlalchemy.ext.asyncio import AsyncAttrs
+# from sqlalchemy.ext.asyncio import AsyncAttrs
 
 
-class BaseModel(AsyncAttrs, DeclarativeBase):
+class BaseModel(DeclarativeBase):
     id: int
     __name__: str
 

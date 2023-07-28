@@ -1,50 +1,27 @@
+from asyncio.taskgroups import TaskGroup
+from asyncio.tasks import ensure_future, wait_for
 from celery import Celery
-from asyncio import run, create_task
 from app.core.logger import log, env
-from app.database.models.meter import MeterModel
-
-# from app.core.logger import log
-
 from app.energy.provider import EnergyProvider
-
+from asyncio import get_event_loop, create_task, gather, sleep
 
 celery = Celery(__name__, broker=env.broker_url, backend=env.broker_url)
 
+async def sync_remote_meters(installation_id, provider: EnergyProvider):
+    return 
 
 
-@celery.task(name="update_meters")
-async def update_meters(installation_id: int, name: str, key: str):
+
+async def fetch_data_async(installation_id: int, name: str, key: str):
     provider = EnergyProvider(installation_id, name, key)
 
-    remote_meters = provider.update_meter_list()
+    meters = await provider.update_meter_list()
 
-    return remote_meters
+    async with TaskGroup() as tg:
+        tasks = [tg.create_task(provider.update_meter_measurements(meter)) for meter in meters]
+    return tasks
 
-
-@celery.task(name="update_measurements")
-def update_measurements(installation_id: int, name: str, key: str, meters: list[MeterModel]):
-    provider = EnergyProvider(installation_id, name, key)
-
-    new_measurements = []
-    for meter in meters:
-        new_measurements.append(provider.update_meter_measurements(meter))
-
-    log.info("updated %s meter(s)", len(meters))
-
-    return new_measurements
-
-
-@celery.task(name="get_updates", ignore_result=True)
-def get_updates(installation_id: int, name: str, key: str):
-    provider = EnergyProvider(installation_id, name, key)
-    background_tasks = set()
-    
-    response = run(provider.update_meter_list(), debug=True)
-    try:
-        for meter in response:
-            create_task(provider.update_meter_measurements(meter))
-
-    except Exception as exception:
-        print(exception)
-    
-    return {"status": True}
+@celery.task(name="sync_installation", ignore_result=False)
+def sync_installation(installation_id: int, name: str, key: str):
+    loop = get_event_loop()
+    return loop.run_until_complete(fetch_data_async(installation_id, name, key))

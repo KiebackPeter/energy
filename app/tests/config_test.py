@@ -40,7 +40,7 @@ def db_session(app: FastAPI) -> Generator[Session, Any, None]:
 
 
 @fixture(scope="function")
-def client(app: FastAPI, db_session: AsyncSession) -> Generator[TestClient, Any, None]:
+def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None]:
     """
     Create a new FastAPI TestClient that uses the `db_session` fixture to override
     the `pg_session` dependency that is injected into routes.

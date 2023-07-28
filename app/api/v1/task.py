@@ -30,7 +30,7 @@ async def status(task_id: str):
 def fetch_measurements_for_all_installations(
     installation: InstallationModel = Depends(with_owner),
 ):
-    task = worker.get_updates.delay(
+    task = worker.sync_installation.delay(
         installation.id, installation.provider_name, installation.provider_key
     )
 

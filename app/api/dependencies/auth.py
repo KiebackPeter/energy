@@ -7,19 +7,19 @@ from app.api.dependencies.token import decode_access_token, encode_access_token,
 from app.core.error import HTTP_ERROR
 from app.core.settings import env
 from app.database.crud.user import user_crud
-from app.database.session import pg_session, Session, AsyncSession, async_pg_session
+from app.database.session import pg_session, Session, Session, async_pg_session
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
-async def create_access_token(
-    session: Annotated[AsyncSession, Depends(async_pg_session)],
+def create_access_token(
+    session: Annotated[Session, Depends(pg_session)],
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):  # TODO: token type hinting
     """
     OAuth2 compatible token login, set an access token for future requests
     """
-    user = await user_crud.authenticate(
+    user = user_crud.authenticate(
         session, email=form_data.username, password=form_data.password
     )
     if user and not user_crud.is_active(user):
@@ -36,9 +36,9 @@ async def create_access_token(
         return access_token
 
 
-async def get_current_user(
-    session: Annotated[AsyncSession, Depends(async_pg_session)],
+def get_current_user(
+    session: Annotated[Session, Depends(pg_session)],
     token: Annotated[str, Depends(oauth2)],
 ):
     token_data = decode_access_token(token)
-    return await user_crud.get(session, id=token_data.sub)  # type: ignore
+    return user_crud.get(session, id=token_data.sub)

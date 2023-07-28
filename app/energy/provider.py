@@ -1,9 +1,10 @@
+from asyncio import sleep
+from asyncio.tasks import create_task, ensure_future, gather, wait_for
 from calendar import monthrange
 from datetime import datetime, timedelta
 from app.core.error import HTTP_ERROR
 from app.core.logger import log
-
-from app.database.session import pg_session
+from app.database.session import session
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
@@ -21,10 +22,14 @@ class EnergyProvider:
         self.api_name = provider_name
         self.api_key = provider_key
 
-        self._session = pg_session()
+        self._session = session
         self._adapter = self.adapter
 
         log.info("energyprovider used: %s", self.api_name)
+
+    # @property
+    # def session(self):
+    #     return next()
 
     @property
     def adapter(self):
@@ -54,9 +59,13 @@ class EnergyProvider:
         local_meters: list[MeterModel] = []
         remote_meters = await self._adapter.fetch_meter_list()
 
-    
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
+            print(f"LOCAL: {meter}")
+            print(f"SESSION_STATE: {self._session}")
+            local_meter = meter_crud.get_by_source_id(
+                self._session, meter.source_id
+            )
+            print(f"LOCAL_METER: {local_meter}")
 
             if local_meter is None:
                 new_meter = meter_crud.create(
@@ -73,12 +82,10 @@ class EnergyProvider:
             len(local_meters),
             len(new_meters),
         )
-        if local_meters and new_meters:
-            return local_meters + new_meters
 
-        return list()
+        return local_meters + new_meters
 
-    async def __write_measurements(
+    def __write_measurements(
         self,
         meter_id: int,
         channel_data: ChannelWithMeasurements,
@@ -112,7 +119,7 @@ class EnergyProvider:
             meter.source_id, date
         )
         for raw_channel in day_measurements_per_channel:
-            await self.__write_measurements(meter.id, raw_channel)
+            self.__write_measurements(meter.id, raw_channel)
 
         return day_measurements_per_channel
 
@@ -124,7 +131,7 @@ class EnergyProvider:
             meter.source_id, date
         )
         for raw_channel in month_measurements_per_channel:
-            await self.__write_measurements(meter.id, raw_channel)
+            self.__write_measurements(meter.id, raw_channel)
 
         return month_measurements_per_channel
 
@@ -150,4 +157,4 @@ class EnergyProvider:
             _, days_in_month = monthrange(latest_known.year, latest_known.month)
             latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
 
-        return {"status": True}
+        return f"{meter.name} is up-to-date "

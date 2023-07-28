@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 from app.database.models.measurement import MeasurementModel
 from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
-from app.core.implementations.base_crud import AsyncSession, CRUDBase # ,log
+from app.core.implementations.base_crud import Session, CRUDBase # ,log
 
 # NOTE: accumulated values come from sql trigger.
 # FIXME: cannot create many for the same channel
@@ -15,7 +15,7 @@ class CRUDMeasurement(
     CRUDBase[MeasurementModel, MeasurementCreateDTO, MeasurementPublic]
 ):
     def create(
-        self, session: AsyncSession, create_obj: MeasurementCreateDTO, channel_id: int
+        self, session: Session, create_obj: MeasurementCreateDTO, channel_id: int
     ) -> MeasurementModel:
         installation_data = jsonable_encoder(create_obj)
         installation_data["channel_id"] = channel_id
@@ -30,7 +30,7 @@ class CRUDMeasurement(
 
     def get_with_date_range(
         self,
-        session: AsyncSession,
+        session: Session,
         *,
         channel_id: int,
         from_date: float,
@@ -47,7 +47,7 @@ class CRUDMeasurement(
         )
 
     def latest_measurement(
-        self, session: AsyncSession,
+        self, session: Session,
         channel_id: int
     ):
         measurement = (
@@ -63,7 +63,7 @@ class CRUDMeasurement(
 
     def delete_since(
         self,
-        session: AsyncSession,
+        session: Session,
         channel_id: int,
         from_date: float,
     ):
