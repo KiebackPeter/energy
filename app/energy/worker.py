@@ -7,9 +7,9 @@ from asyncio import get_event_loop, create_task, gather, sleep
 
 celery = Celery(__name__, broker=env.broker_url, backend=env.broker_url)
 
-async def sync_remote_meters(installation_id, provider: EnergyProvider):
-    return 
 
+async def sync_remote_meters(installation_id, provider: EnergyProvider):
+    return
 
 
 async def fetch_data_async(installation_id: int, name: str, key: str):
@@ -17,9 +17,11 @@ async def fetch_data_async(installation_id: int, name: str, key: str):
 
     meters = await provider.update_meter_list()
 
-    async with TaskGroup() as tg:
-        tasks = [tg.create_task(provider.update_meter_measurements(meter)) for meter in meters]
-    return tasks
+    for meter in meters:
+        await provider.update_meter_measurements(meter)
+
+    return meters
+
 
 @celery.task(name="sync_installation", ignore_result=False)
 def sync_installation(installation_id: int, name: str, key: str):

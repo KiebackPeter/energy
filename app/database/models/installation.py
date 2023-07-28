@@ -14,6 +14,7 @@ class InstallationModel(BaseModel):
     provider_name: Mapped[str | None] = mapped_column()
     provider_key: Mapped[str | None] = mapped_column()
     meters: Mapped[list[MeterModel]] = relationship(
-        back_populates="installation",
+        "MeterModel",
+        backref="installation",
         cascade="all, delete-orphan",
     )

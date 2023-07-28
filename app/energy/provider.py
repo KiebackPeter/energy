@@ -60,13 +60,9 @@ class EnergyProvider:
         remote_meters = await self._adapter.fetch_meter_list()
 
         for meter in remote_meters:
-            print(f"LOCAL: {meter}")
-            print(f"SESSION_STATE: {self._session}")
             local_meter = meter_crud.get_by_source_id(
                 self._session, meter.source_id
             )
-            print(f"LOCAL_METER: {local_meter}")
-
             if local_meter is None:
                 new_meter = meter_crud.create(
                     self._session, meter, self.installation_id
@@ -142,6 +138,7 @@ class EnergyProvider:
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         # NOTE checks only the first channel
+        print(meter.channels)
         latest_known = measurement_crud.latest_measurement(
             self._session, meter.channels[0].id
         )

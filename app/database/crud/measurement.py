@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import desc
+from sqlalchemy import desc, select, insert
 from sqlalchemy.exc import IntegrityError
 from app.database.models.measurement import MeasurementModel
 from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
@@ -17,16 +17,17 @@ class CRUDMeasurement(
     def create(
         self, session: Session, create_obj: MeasurementCreateDTO, channel_id: int
     ) -> MeasurementModel:
-        installation_data = jsonable_encoder(create_obj)
-        installation_data["channel_id"] = channel_id
-        measurement = MeasurementModel(**installation_data)
-
+        measurement_data = jsonable_encoder(create_obj)
+        measurement_data["channel_id"] = channel_id
+        return session.scalars(
+            insert(self.model).values(measurement_data).returning(self.model)
+        ).one()
         # TODO: catch constain on double timestamps for a channel_id
-        try:
-            self.refresh(session, database_model=measurement)
-        except IntegrityError as err:
-            log.critical("already have this timestamp for channel_id: %s", err.params)
-        return measurement
+        # try:
+        #     self.refresh(session, database_model=measurement)
+        # except IntegrityError as err:
+        #     log.critical("already have this timestamp for channel_id: %s", err.params)
+        # return measurement
 
     def get_with_date_range(
         self,
@@ -50,12 +51,14 @@ class CRUDMeasurement(
         self, session: Session,
         channel_id: int
     ):
-        measurement = (
-            session.query(self.model)
-            .filter(self.model.channel_id == channel_id)
+
+            # select(self.model).filter_by(source_id=source_id)
+
+        measurement = session.scalars(
+            select(self.model)
+            .filter_by(channel_id = channel_id)
             .order_by(desc(self.model.timestamp))
-            .first()
-        )
+        ).first()
         if measurement:
                 return datetime.fromtimestamp(measurement.timestamp)
         else:

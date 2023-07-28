@@ -17,9 +17,10 @@ class MeterModel(BaseModel):
     installation_id: Mapped[int] = mapped_column(
         ForeignKey("installation.id"), index=True
     )
-    installation: Mapped["InstallationModel"] = relationship(back_populates="meters")
     channels: Mapped[list[ChannelModel]] = relationship(
-    back_populates="meter",
+    "ChannelModel",
+    backref="meter",
     cascade="all, delete-orphan",
     )
+
     # channels: Mapped[list[ChannelModel]] = relationship(backref="meter")
