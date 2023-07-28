@@ -22,7 +22,7 @@ class CRUDInstallation(
         new_installation = session.scalar(
             insert(self.model).values(installation_data).returning(self.model)
         )
-
+        session.commit()
         return new_installation
 
     def get_with_meters(self, session: Session, installaiton_id: int):

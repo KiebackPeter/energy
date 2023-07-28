@@ -105,6 +105,7 @@ class EnergyProvider:
             except Exception as err:
                 log.critical("%s", err)
                 continue
+        self._session.commit()
 
     async def get_day_measurements(
         self, meter: MeterModel, date: datetime
@@ -138,10 +139,12 @@ class EnergyProvider:
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         # NOTE checks only the first channel
+        print(meter)
         print(meter.channels)
         latest_known = measurement_crud.latest_measurement(
-            self._session, meter.channels[0].id
+            self._session, meter.id
         )
+        print("should reutnr datetime: {latest_known}")
 
         today = datetime.today()
         num_months = (

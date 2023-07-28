@@ -84,7 +84,7 @@ class EnergiemissieAdapter(BaseAdapter):
 
         formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
-            f"{self.base_url}/measurements/{source_id}/types/month/months/{formatted_month}"
+            f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_month}"
         )
 
         return self.format_measurements(raw_measurements)

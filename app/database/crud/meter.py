@@ -14,9 +14,11 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
     ):
         meter_data = jsonable_encoder(create_obj)
         meter_data["installation_id"] = installation_id
-        return session.scalars(
+        new_meter = session.scalars(
             insert(self.model).values(meter_data).returning(self.model)
         ).one()
+        session.commit()
+        return new_meter
 
     def get_by_id_with_channels(self, session: Session, meter_id: int):
         return session.scalars(

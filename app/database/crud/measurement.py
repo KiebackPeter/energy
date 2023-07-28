@@ -20,7 +20,7 @@ class CRUDMeasurement(
         measurement_data = jsonable_encoder(create_obj)
         measurement_data["channel_id"] = channel_id
         return session.scalars(
-            insert(self.model).values(measurement_data).returning(self.model)
+            insert(self.model).values(measurement_data)
         ).one()
         # TODO: catch constain on double timestamps for a channel_id
         # try:
@@ -52,17 +52,17 @@ class CRUDMeasurement(
         channel_id: int
     ):
 
-            # select(self.model).filter_by(source_id=source_id)
-
         measurement = session.scalars(
-            select(self.model)
+            select(self.model.timestamp)
             .filter_by(channel_id = channel_id)
             .order_by(desc(self.model.timestamp))
-        ).first()
+        ).one_or_none()
+
+        print(f"lastest channel {measurement}")
         if measurement:
-                return datetime.fromtimestamp(measurement.timestamp)
+                return datetime.fromtimestamp(measurement)
         else:
-            return  datetime.today() - timedelta(days=(365 * 5))
+            return datetime.today() - timedelta(days=(365 * 5))
 
     def delete_since(
         self,
