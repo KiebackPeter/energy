@@ -128,7 +128,7 @@ class EnergyProvider:
             meter.source_id, date
         )
         for raw_channel in month_measurements_per_channel:
-            create_task(self.__write_measurements(meter.id, raw_channel))
+            self.__write_measurements(meter.id, raw_channel)
 
         return month_measurements_per_channel
 
