@@ -23,13 +23,13 @@ def of_user(
     # BUG doesnt pick up installation id?
     if installation_id and current_user.is_superuser: 
         installation = installation_crud.get(session, installation_id)
-        return installation.first()
+        return installation
 
     elif current_user.installation_id:
         installation = installation_crud.get_with_meters(
             session, current_user.installation_id
         )
-        return installation.first()
+        return installation
 
 
 def with_owner(
