@@ -139,13 +139,10 @@ class EnergyProvider:
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         # NOTE checks only the first channel
-        # print(meter)
-        # print(meter.channels)
         latest_known = measurement_crud.latest_measurement(
-            self._session, meter.id
+            self._session, meter.channels[0].id
         )
-        # print("should reutnr datetime: {latest_known}")
-
+        
         today = datetime.today()
         num_months = (
             (today.year - latest_known.year) * 12
