@@ -60,7 +60,7 @@ class CRUDMeasurement(
 
         print(f"lastest channel {measurement}")
         if measurement:
-                return datetime.fromtimestamp(measurement)
+            return datetime.fromtimestamp(measurement)
         else:
             return datetime.today() - timedelta(days=(365 * 5))
 

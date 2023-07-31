@@ -140,7 +140,7 @@ class EnergyProvider:
 
         # NOTE checks only the first channel
         latest_known = measurement_crud.latest_measurement(
-            self._session, meter.channels[0].id
+            self._session, meter.id
         )
         
         today = datetime.today()
