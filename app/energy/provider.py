@@ -10,7 +10,7 @@ from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
 from app.database.models.meter import MeterModel
 from app.energy.adapters import energiemissie, joulz, kenter
-from app.schemas.channel import ChannelWithMeasurements
+from app.schemas.channel import ChannelUpdateDTO, ChannelWithMeasurements
 
 
 class EnergyProvider:
@@ -60,9 +60,7 @@ class EnergyProvider:
         remote_meters = await self._adapter.fetch_meter_list()
 
         for meter in remote_meters:
-            local_meter = meter_crud.get_by_source_id(
-                self._session, meter.source_id
-            )
+            local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
             if local_meter is None:
                 new_meter = meter_crud.create(
                     self._session, meter, self.installation_id
@@ -105,6 +103,9 @@ class EnergyProvider:
             except Exception as err:
                 log.critical("%s", err)
                 continue
+
+        local_channel.latest_measurement = channel_data.measurements[-1].timestamp
+        channel_crud.update(session, local_channel, local_channel.__dict__)
         self._session.commit()
 
     async def get_day_measurements(
@@ -140,12 +141,12 @@ class EnergyProvider:
 
         # NOTE checks only the first channel
         # print(meter)
-        
-        for channel in meter_crud.get_by_id_with_channels(session, meter.id):
-            print(f"channel: {channel}")
-            latest_known = measurement_crud.latest_channel_measurement(
-                self._session, channel.id
-            )
+
+        channels =  meter_crud.get_by_id_with_channels(session, meter.id)
+        print(f"channel: {channels}")
+        latest_known = measurement_crud.latest_channel_measurement(
+            self._session, channels[0].id
+        )
         # print("should reutnr datetime: {latest_known}")
 
         today = datetime.today()
@@ -158,7 +159,9 @@ class EnergyProvider:
             for _ in range(num_months):
                 _ = await self.get_month_measurements(meter, latest_known)
                 _, days_in_month = monthrange(latest_known.year, latest_known.month)
-                latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
+                latest_known = latest_known.replace(day=days_in_month) + timedelta(
+                    days=1
+                )
 
             return f"{meter.name} is up-to-date "
         else:

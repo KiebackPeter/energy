@@ -4,6 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel as DTO
 from sqlalchemy import insert, select, update
 from asyncpg import UniqueViolationError
+from sqlalchemy.exc import SQLAlchemyError
 
 # from sqlalchemy.orm import Session
 from sqlalchemy.orm import Session
@@ -28,63 +29,39 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
         """
         self.model = model
 
-    # async def do_create( # only use refrease
-    #     self, session: Session, create_obj: CreateDTO
-    # ) -> DatabaseModel:
-    #     try:
-    #         result = session.execute(
-    #             insert(self.model).values(**create_obj).returning(self.model.id)
-    #         )
-    #         session.commit()
-    #         return result.scalar_one()
+    def create(self, session:Session, new_obj: CreateDTO):
+        return session.scalars(
+            insert(self.model)
+                .values(*new_obj)
+                .returning(self.model)
+        ).one()
 
-    #     except UniqueViolationError as err:
-    #         return err
-
-    def get(self, session: Session, id: int):
-        result = session.scalars(
-            select(self.model)
-            .filter_by(id = id)
+    def get_by(self, session: Session, **kwargs):
+        """Select exectly one or none with where clause"""
+        return session.scalars(
+            select(self.model).filter_by(**kwargs)
         ).one_or_none()
-        return result
 
-    async def get_multi(
-        self,
-        session: Session,
-        skip: int | None = 0,
-        limit: int | None = 100,
-    ):
-        database_models = session.scalars(
-            select(self.model).offset(skip).limit(limit)
-        )
-        if not database_models.all():
+    def filter_by(self, session: Session, **kwargs):
+        """Select all with where clause"""
+        selection = session.scalars(
+            select(self.model).filter_by(**kwargs)
+        ).all()
+        if not selection:
             HTTP_ERROR(404, "None found")
+        return selection
 
-        return database_models.all()
+    def update(self, session: Session,  id: int, **kwargs):
+        """Update object with id"""
+        try:
+            obj = self.get_by(session, id = id)
+            if not obj:
+                return None
+            for key, value in kwargs.items():
+                setattr(obj, key, value)
+            session.commit()
+            return obj
 
-    def update(
-        self,
-        session: Session,
-        database_model: DatabaseModel | Dict[str, Any],
-        update_obj: UpdateDTO | Dict[str, Any],
-    ) -> DatabaseModel:
-
-        if isinstance(database_model, dict):
-            del database_model["_sa_instance_state"]
-            database_model = self.model(**database_model)
-
-        obj = jsonable_encoder(database_model)
-
-        if isinstance(update_obj, dict):
-            update_data = update_obj
-        else:
-            update_data = update_obj.dict(exclude_unset=True)
-
-        for field in obj:
-            if field in update_data:
-                setattr(database_model, field, update_data[field])
-
-        session.scalar(
-            update(self.model).values(database_model.__dict__)
-        )
-        return database_model
+        except SQLAlchemyError as e:
+            session.rollback()
+            return e

@@ -14,6 +14,7 @@ class ChannelCreateDTO(ChannelPublic):
 class ChannelUpdateDTO(BaseModel):
     qanteon_name: str | None
     qanteon_id: int | None
+    latest_measurement: int | None
 
 
 class ChannelInBD(ChannelPublic):

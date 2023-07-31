@@ -41,7 +41,7 @@ async def update_day_measurement_from_provider(
     session=Depends(pg_session),
     provider=Depends(provider_of_installation),
 ):
-    meter = meter_crud.get(session, id=meter_id)
+    meter = meter_crud.get_by(session, id=meter_id)
 
     do.add_task(
         provider.fetch_day_measurements,

@@ -22,7 +22,7 @@ def of_user(
 ):
     # BUG doesnt pick up installation id?
     if installation_id and current_user.is_superuser: 
-        installation = installation_crud.get(session, installation_id)
+        installation = installation_crud.get_by(session, id=installation_id)
         return installation
 
     elif current_user.installation_id:
@@ -57,10 +57,8 @@ def provider_of_installation(
 def get_all_installations(
     session: Annotated[Session, Depends(pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
-    skip: int | None = None,
-    limit: int | None = None,
 ):
-    installations = installation_crud.get_multi(session, skip=skip, limit=limit)
+    installations = installation_crud.filter_by(session)
 
     return installations
 
@@ -70,7 +68,7 @@ def get_installation_by_id(
     session: Annotated[Session, Depends(pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
 ):
-    installation = installation_crud.get(session, id=installation_id)
+    installation = installation_crud.get_by(session, id=installation_id)
 
     return installation
 
@@ -81,7 +79,7 @@ def update_installation_by_id(
     session: Annotated[Session, Depends(pg_session)],
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
 ):
-    installation = installation_crud.get(session, id=installation_id)
+    installation = installation_crud.get_by(session, id=installation_id)
     updated_installation = installation_crud.update(session, installation, update_data)
 
     return updated_installation

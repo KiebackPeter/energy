@@ -41,4 +41,4 @@ def get_current_user(
     token: Annotated[str, Depends(oauth2)],
 ):
     token_data = decode_access_token(token)
-    return user_crud.get(session, id=token_data.sub)
+    return user_crud.get_by(session, id=token_data.sub)
