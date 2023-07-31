@@ -20,7 +20,7 @@ async def fetch_data_async(installation_id: int, name: str, key: str):
     for meter in meters:
         await provider.update_meter_measurements(meter)
 
-    return {"msg": f"updated meters: {len(meters}"}
+    return {"msg": f"updated meters: {len(meters)}"}
 
 
 @celery.task(name="sync_installation", ignore_result=False)
