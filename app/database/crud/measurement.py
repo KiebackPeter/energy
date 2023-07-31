@@ -47,7 +47,7 @@ class CRUDMeasurement(
             .all()
         )
 
-    def latest_measurement(
+    def latest_channel_measurement(
         self, session: Session,
         channel_id: int
     ):
