@@ -140,10 +140,12 @@ class EnergyProvider:
 
         # NOTE checks only the first channel
         # print(meter)
-        # print(meter.channels)
-        latest_known = measurement_crud.latest_channel_measurement(
-            self._session, meter.id
-        )
+        
+        for channel in meter_crud.get_by_id_with_channels(session, meter.id):
+            print(f"channel: {channel}")
+            latest_known = measurement_crud.latest_channel_measurement(
+                self._session, channel.id
+            )
         # print("should reutnr datetime: {latest_known}")
 
         today = datetime.today()

@@ -53,14 +53,13 @@ class CRUDMeasurement(
     ):
 
         measurement = session.scalars(
-            select(self.model.timestamp)
+            select(self.model)
             .filter_by(channel_id = channel_id)
             .order_by(desc(self.model.timestamp))
-        ).one_or_none()
-
-        print(f"lastest channel {measurement}")
+        ).first()
+        print(f"LATEST CHANNEL {measurement}")
         if measurement:
-            return datetime.fromtimestamp(measurement)
+            return datetime.fromtimestamp(measurement.timestamp)
         else:
             return datetime.today() - timedelta(days=(365 * 5))
 
