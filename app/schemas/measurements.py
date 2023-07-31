@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from .base_schema import BaseSchema
 
 
-class MeasurementPublic(BaseModel):
+class MeasurementPublic(BaseSchema):
     value: float
     timestamp: float
     accumulated: int

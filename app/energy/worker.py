@@ -1,10 +1,7 @@
-from asyncio.taskgroups import TaskGroup
-from asyncio.tasks import ensure_future, wait_for
 from celery import Celery
-from app.core.logger import log, env
+from app.core.logger import env
 from app.energy.provider import EnergyProvider
-from asyncio import get_event_loop, create_task, gather, sleep
-
+from asyncio import get_event_loop
 celery = Celery(__name__, broker=env.broker_url, backend=env.broker_url)
 
 

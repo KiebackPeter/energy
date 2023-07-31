@@ -1,9 +1,13 @@
-from datetime import datetime
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from app.core.implementations.base_model import BaseModel
-from app.database.models.channel import ChannelModel
+"""Meter table"""
+from .base_model import (
+    datetime,
+    BaseModel,
+    Mapped,
+    mapped_column,
+    relationship,
+    ForeignKey,
+)
+from .channel import ChannelModel
 
 
 class MeterModel(BaseModel):
@@ -18,9 +22,9 @@ class MeterModel(BaseModel):
         ForeignKey("installation.id"), index=True
     )
     channels: Mapped[list[ChannelModel]] = relationship(
-    "ChannelModel",
-    backref="meter",
-    cascade="all, delete-orphan",
+        "ChannelModel",
+        backref="meter",
+        cascade="all, delete-orphan",
     )
 
     # channels: Mapped[list[ChannelModel]] = relationship(backref="meter")

@@ -7,7 +7,7 @@ from app.api.dependencies.token import decode_access_token, encode_access_token,
 from app.core.error import HTTP_ERROR
 from app.core.settings import env
 from app.database.crud.user import user_crud
-from app.database.session import pg_session, Session, Session, async_pg_session
+from app.database.session import pg_session, Session, Session
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 

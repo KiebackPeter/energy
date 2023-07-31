@@ -1,14 +1,9 @@
 from datetime import datetime, timedelta
-
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import desc, select, insert
-from sqlalchemy.exc import IntegrityError
+
 from app.database.models.measurement import MeasurementModel
 from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
-from app.core.implementations.base_crud import Session, CRUDBase # ,log
-
-# NOTE: accumulated values come from sql trigger.
-# FIXME: cannot create many for the same channel
+from app.database.crud.base_crud  import Session, CRUDBase, select, insert, desc  # , log,
 
 
 class CRUDMeasurement(
@@ -19,9 +14,7 @@ class CRUDMeasurement(
     ) -> MeasurementModel:
         measurement_data = jsonable_encoder(create_obj)
         measurement_data["channel_id"] = channel_id
-        return session.scalars(
-            insert(self.model).values(measurement_data)
-        ).one()
+        return session.scalars(insert(self.model).values(measurement_data)).one()
         # TODO: catch constain on double timestamps for a channel_id
         # try:
         #     self.refresh(session, database_model=measurement)
@@ -47,14 +40,10 @@ class CRUDMeasurement(
             .all()
         )
 
-    def latest_channel_measurement(
-        self, session: Session,
-        channel_id: int
-    ) -> datetime:
-
+    def latest_channel_measurement(self, session: Session, channel_id: int) -> datetime:
         measurement = session.scalars(
             select(self.model)
-            .filter_by(channel_id = channel_id)
+            .filter_by(channel_id=channel_id)
             .order_by(desc(self.model.timestamp))
         ).first()
         print(f"LATEST CHANNEL {measurement}")

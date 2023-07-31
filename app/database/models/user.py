@@ -1,10 +1,11 @@
-from datetime import datetime
-
-from sqlalchemy import ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column
-
-from app.core.implementations.base_model import BaseModel
-from app.database.models.installation import InstallationModel
+"""User table"""
+from .base_model import (
+    datetime,
+    ForeignKey,
+    BaseModel,
+    Mapped,
+    mapped_column
+)
 
 
 class UserModel(BaseModel):
@@ -14,7 +15,5 @@ class UserModel(BaseModel):
     hashed_password: Mapped[str] = mapped_column(index=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
-    installation_id: Mapped[int | None] = mapped_column(
-        ForeignKey("installation.id")
-    )
+    created_at: Mapped[datetime] = mapped_column(insert_default=datetime.today())
+    installation_id: Mapped[int | None] = mapped_column(ForeignKey("installation.id"))

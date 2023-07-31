@@ -1,11 +1,15 @@
-from datetime import datetime, timedelta
-from typing import Any
+"""Implementation for joulz.nl"""
 
-from app.core.logger import log
-from app.database.models.meter import MeterModel
-from app.energy.adapters.adapter import BaseAdapter
-from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.meter import MeterCreateDTO
+from typing import Any
+from .base_adapter import (
+    BaseAdapter,
+    datetime,
+    # timedelta,
+    log,
+    ChannelWithMeasurements,
+    MeterCreateDTO,
+    # MeasurementCreateDTO,
+)
 
 
 class JoulzAdapter(BaseAdapter):

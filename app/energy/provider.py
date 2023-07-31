@@ -1,16 +1,19 @@
-from asyncio import sleep
-from asyncio.tasks import create_task, ensure_future, gather, wait_for
 from calendar import monthrange
-from datetime import datetime, timedelta
-from app.core.error import HTTP_ERROR
-from app.core.logger import log
+
 from app.database.session import session
+from app.database.models.meter import MeterModel
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
-from app.database.models.meter import MeterModel
-from app.energy.adapters import energiemissie, joulz, kenter
-from app.schemas.channel import ChannelUpdateDTO, ChannelWithMeasurements
+
+from .adapters import energiemissie, joulz, kenter
+from .adapters.base_adapter import (
+    datetime,
+    timedelta,
+    HTTP_ERROR,
+    log,
+    ChannelWithMeasurements,
+)
 
 
 class EnergyProvider:
@@ -142,7 +145,7 @@ class EnergyProvider:
         # NOTE checks only the first channel
         # print(meter)
 
-        channels =  meter_crud.get_by_id_with_channels(session, meter.id)
+        channels = meter_crud.get_by_id_with_channels(session, meter.id)
         print(f"channel: {channels}")
         latest_known = measurement_crud.latest_channel_measurement(
             self._session, channels[0].id
