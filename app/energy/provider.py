@@ -139,10 +139,13 @@ class EnergyProvider:
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         # NOTE checks only the first channel
-        latest_known = measurement_crud.latest_measurement(
+        # print(meter)
+        # print(meter.channels)
+        latest_known = measurement_crud.latest_channel_measurement(
             self._session, meter.id
         )
-        
+        # print("should reutnr datetime: {latest_known}")
+
         today = datetime.today()
         num_months = (
             (today.year - latest_known.year) * 12
@@ -151,7 +154,7 @@ class EnergyProvider:
         )
         if num_months > 1:
             for _ in range(num_months):
-                await self.get_month_measurements(meter, latest_known)
+                _ = await self.get_month_measurements(meter, latest_known)
                 _, days_in_month = monthrange(latest_known.year, latest_known.month)
                 latest_known = latest_known.replace(day=days_in_month) + timedelta(days=1)
 
@@ -159,7 +162,7 @@ class EnergyProvider:
         else:
             num_days = today - latest_known
             for _ in range(num_days.days):
-                await self.get_day_measurements(meter, latest_known)
+                _ = await self.get_day_measurements(meter, latest_known)
                 latest_known += timedelta(days=1)
 
             return f"{meter.name} is up-to-date "
