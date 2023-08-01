@@ -29,7 +29,7 @@ def all_installation_meters(
     installation: Annotated[InstallationModel, Depends(of_user)],
 ):
     # TODO return meter with channels
-    return installation.meters
+    return installation
 
 
 @router.get("/{meter_id}")
