@@ -48,7 +48,7 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
         ).one_or_none()
         return result
 
-    async def get_multi(
+    def get_multi(
         self,
         session: Session,
         skip: int | None = 0,
@@ -56,11 +56,11 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
     ):
         database_models = session.scalars(
             select(self.model).offset(skip).limit(limit)
-        )
-        if not database_models.all():
+        ).all()
+        if not database_models:
             HTTP_ERROR(404, "None found")
 
-        return database_models.all()
+        return database_models
 
     def update(
         self,
