@@ -26,7 +26,7 @@ async def status(task_id: str):
     return _to_task_out(req)
 
 
-@router.get("/update/installation")
+@router.get("/update/installation/{installation_id}")
 def fetch_measurements_for_all_installations(
     installation: InstallationModel = Depends(with_owner),
 ):
