@@ -25,7 +25,7 @@ services:
 
   worker:
     build: .
-    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=info"
+    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=critical"
     volumes:
       - ./app:/code/app
     environment:
