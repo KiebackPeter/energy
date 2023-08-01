@@ -130,7 +130,8 @@ class EnergyProvider:
     ):
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
-        last_known = datetime.today() - timedelta(days=(365 * 5))
+        today = datetime.today()
+        last_known = today - timedelta(days=(365 * 5))
         
         # TODO ugly check for latest known channel measurements
         for meter in meter_crud.get_by_id_with_channels(self._session, meter.id):
@@ -139,9 +140,8 @@ class EnergyProvider:
                     self._session, channel.id
                 )
                 if latest_check is not None:
-                    last_known = latest_check
+                    latest_check = last_known 
 
-        today = datetime.today()
         num_months = (
             (today.year - last_known.year) * 12 + (today.month - last_known.month) + 1
         )
