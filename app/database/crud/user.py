@@ -4,7 +4,13 @@ from passlib.context import CryptContext
 
 from app.database.models.user import UserModel
 from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
-from app.database.crud.base_crud  import Session, CRUDBase, HTTP_ERROR, select, insert  #, log,
+from app.database.crud.base_crud import (
+    Session,
+    CRUDBase,
+    HTTP_ERROR,
+    select,
+    insert,
+)  # , log,
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -30,7 +36,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
     def get_credentials(self, session: Session, email: str):
         return session.scalars(
             select(self.model).where(self.model.email == email)
-        ).first()
+        ).one_or_none()
 
     def is_active(self, user: UserModel) -> bool:
         return user.is_active
@@ -47,25 +53,21 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
         elif not verify_password(password, user.hashed_password):
             HTTP_ERROR(400, "Incorrect email and password")
 
-        return user
+        return True
 
-    def update_self(
+    def update_user(
         self,
         session: Session,
-        model: UserModel,
-        update_obj: UserUpdateSelfDTO | Dict[str, Any],
+        user: UserModel,
+        update_obj: UserUpdateSelfDTO,
     ):
-        update_data = jsonable_encoder(update_obj)
-        if update_data["password"]:
-            hashed_password = get_password_hash(update_data["password"])
+        update_data = jsonable_encoder(update_obj, exclude_defaults=True)
+        if update_obj.password is not None:
+            hashed_password = get_password_hash(update_obj.password)
             del update_data["password"]
             update_data["hashed_password"] = hashed_password
-
-        updated_user = self.update(
-            session, database_model=model, update_obj=update_data
-        )
-
-        return updated_user
+# TODO
+        return self.update(session, user, update_data)
 
 
 user_crud = CRUDUser(UserModel)
