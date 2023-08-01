@@ -2,6 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies.installation import (
+    get_all_installations,
     of_user,
     with_owner,
 )
@@ -60,11 +61,11 @@ def put_installation_of_user(
 #     return connected_user.__dict__
 
 
-# @router.get("/all", response_model=list[InstallationPublic])
-# def all_installations(
-#     installation_list=Depends(get_all_installations),
-# ):
-#     return installation_list
+@router.get("/all")
+def all_installations(
+    installation_list=Depends(get_all_installations),
+):
+    return installation_list
 
 
 # @router.get("/{installation_id}", response_model=InstallationPublic)

@@ -14,13 +14,9 @@ class CRUDMeasurement(
     ) -> MeasurementModel:
         measurement_data = jsonable_encoder(create_obj)
         measurement_data["channel_id"] = channel_id
-        return session.scalars(insert(self.model).values(measurement_data)).one()
-        # TODO: catch constain on double timestamps for a channel_id
-        # try:
-        #     self.refresh(session, database_model=measurement)
-        # except IntegrityError as err:
-        #     log.critical("already have this timestamp for channel_id: %s", err.params)
-        # return measurement
+        return session.scalar(
+            insert(self.model).values(measurement_data)
+        )
 
     def get_with_date_range(
         self,
@@ -46,11 +42,8 @@ class CRUDMeasurement(
             .filter_by(channel_id=channel_id)
             .order_by(desc(self.model.timestamp))
         ).first()
-        print(f"LATEST CHANNEL {measurement}")
         if measurement:
             return datetime.fromtimestamp(measurement.timestamp)
-        else:
-            return datetime.today() - timedelta(days=(365 * 5))
 
     def delete_since(
         self,
