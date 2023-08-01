@@ -1,5 +1,3 @@
-from asyncio import sleep
-from asyncio.tasks import create_task, ensure_future, gather, wait_for
 from calendar import monthrange
 from datetime import datetime, timedelta
 from app.core.error import HTTP_ERROR
@@ -27,10 +25,6 @@ class EnergyProvider:
 
         log.info("energyprovider used: %s", self.api_name)
 
-    # @property
-    # def session(self):
-    #     return next()
-
     @property
     def adapter(self):
         """Give adapter for the provider"""
@@ -41,9 +35,9 @@ class EnergyProvider:
             case "joulz":
                 return joulz.JoulzAdapter(self.api_key)
             # case "fudura":
-            #     return fudura.FuduraAdapter(self.installation.provider_name)
+            #     return fudura.FuduraAdapter(self.installation.api_key)
             # case "tums":
-            #     return tums.TumsAdapter(self.installation.provider_name)
+            #     return tums.TumsAdapter(self.installation.api_key)
             case "kenter":
                 return kenter.KenterAdapter(self.api_key)
             case _:
@@ -137,6 +131,8 @@ class EnergyProvider:
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         last_known = datetime.today() - timedelta(days=(365 * 5))
+        
+        # TODO ugly check for latest known channel measurements
         for meter in meter_crud.get_by_id_with_channels(self._session, meter.id):
             for channel in meter.channels:
                 latest_check = measurement_crud.latest_channel_measurement(
