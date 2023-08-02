@@ -16,10 +16,10 @@ class CRUDMeasurement(
 ):
     def create(
         self, session: Session, create_obj: MeasurementCreateDTO, channel_id: int
-    ) -> MeasurementModel:
+    ):
         measurement_data = jsonable_encoder(create_obj)
         measurement_data["channel_id"] = channel_id
-        return session.scalar(
+        session.scalar(
             insert(self.model).values(measurement_data)
         )
 

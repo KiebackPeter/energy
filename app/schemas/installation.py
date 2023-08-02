@@ -3,7 +3,7 @@ from app.schemas.meter import MeterInBD, BaseModel
 
 class InstallationPublic(BaseModel):
     name: str
-    owner_email: str
+    owner_email: str | None = None
     contracted_power_kw: int | None = None
     contracted_power_m3: int | None = None
     contracted_power_l: int | None = None

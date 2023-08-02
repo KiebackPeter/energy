@@ -21,11 +21,11 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
         return new_meter
 
     def get_by_id_with_channels(self, session: Session, meter_id: int):
-        return session.scalars(
+        return session.scalar(
             select(MeterModel)
             .where(MeterModel.id == meter_id)
             .options(selectinload(MeterModel.channels))
-        ).all()
+        )
 
     def get_by_source_id(self, session: Session, source_id: str):
         return session.scalars(
