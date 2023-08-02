@@ -15,7 +15,7 @@ class EnergiemissieAdapter(BaseAdapter):
         super().__init__({"x-api-key": provider_key})
         self.base_url = "https://mijnenergiemissie.nl/webservice/v2"
 
-    async def get_meter_list(self) -> list[MeterCreateDTO]:
+    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
 
         raw_meter_list = await self.make_request(self.base_url + "/meters")
@@ -69,7 +69,7 @@ class EnergiemissieAdapter(BaseAdapter):
 
         return measurements_per_channel
 
-    async def get_day_measurements(self, source_id: int, date: datetime):
+    async def fetch_day_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         formatted_day = f"{date.year}/{date.month}/{date.day}"
@@ -79,12 +79,12 @@ class EnergiemissieAdapter(BaseAdapter):
 
         return self.format_measurements(raw_measurements)
 
-    async def get_month_measurements(self, source_id: int, date: datetime):
+    async def fetch_month_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
-        formatted_day = f"{date.year}/{date.month}"
+        formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
-            f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_day}"
+            f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_month}"
         )
 
         return self.format_measurements(raw_measurements)

@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
+from sqlalchemy import desc, select, insert
 from sqlalchemy.exc import IntegrityError
-from app.core.logger import log
-from app.core.implementations.base_crud import CRUDBase
 from app.database.models.measurement import MeasurementModel
 from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
+from app.core.implementations.base_crud import Session, CRUDBase # ,log
 
 # NOTE: accumulated values come from sql trigger.
 # FIXME: cannot create many for the same channel
@@ -17,17 +16,12 @@ class CRUDMeasurement(
 ):
     def create(
         self, session: Session, create_obj: MeasurementCreateDTO, channel_id: int
-    ) -> MeasurementModel:
-        installation_data = jsonable_encoder(create_obj)
-        installation_data["channel_id"] = channel_id
-        measurement = MeasurementModel(**installation_data)
-
-        # catch constain on double timestamps for a channel_id
-        try:
-            self.commit(session, database_model=measurement)
-        except IntegrityError as err:
-            log.critical("already have this timestamp for channel_id: %s", err.params)
-        return measurement
+    ):
+        measurement_data = jsonable_encoder(create_obj)
+        measurement_data["channel_id"] = channel_id
+        session.scalar(
+            insert(self.model).values(measurement_data)
+        )
 
     def get_with_date_range(
         self,
@@ -46,6 +40,19 @@ class CRUDMeasurement(
             )
             .all()
         )
+
+    def latest_channel_measurement(
+        self, session: Session,
+        channel_id: int
+    ):
+
+        measurement = session.scalars(
+            select(self.model)
+            .filter_by(channel_id = channel_id)
+            .order_by(desc(self.model.timestamp))
+        ).first()
+        if measurement:
+            return datetime.fromtimestamp(measurement.timestamp)
 
     def delete_since(
         self,

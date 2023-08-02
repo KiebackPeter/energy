@@ -13,4 +13,8 @@ class InstallationModel(BaseModel):
     contracted_power_l: Mapped[int | None] = mapped_column()
     provider_name: Mapped[str | None] = mapped_column()
     provider_key: Mapped[str | None] = mapped_column()
-    meters: Mapped[list[MeterModel]] = relationship(backref="installation")
+    meters: Mapped[list[MeterModel]] = relationship(
+        "MeterModel",
+        backref="installation",
+        cascade="all, delete-orphan",
+    )

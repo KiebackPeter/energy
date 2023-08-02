@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 from jose.jwt import decode, encode, JWTError
 
@@ -12,16 +12,16 @@ def encode_access_token(subject: Union[str, Any], expires_delta: timedelta) -> s
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=env.API.tokenExpireMinutes)
+        expire = datetime.utcnow() + timedelta(minutes=float(env.token_expire_minutes))
     to_encode: dict[str, Any] = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = encode(to_encode, env.API.secretKey, algorithm="HS256")
+    encoded_jwt = encode(to_encode, env.private_key, algorithm="HS256")
 
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> TokenPayload | None:
     try:
-        payload = decode(token, env.API.secretKey, algorithms="HS256")
+        payload = decode(token, env.private_key, algorithms="HS256")
 
         return TokenPayload(**payload)
 

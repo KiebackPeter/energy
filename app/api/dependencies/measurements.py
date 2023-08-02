@@ -7,14 +7,14 @@ from app.api.dependencies.installation import (
     provider_of_installation,
 )
 from app.database.crud.measurement import measurement_crud
-from app.database.session import use_db
+from app.database.session import pg_session
 from app.database.crud.meter import meter_crud
 
 # def create_measurement(
 #     channel_id: int,
 #     create_data: MeasurementCreateDTO,
 #     installation=Depends(with_owner),
-#     session=Depends(use_db),
+#     session=Depends(pg_session),
 # ):
 #     measurement = measurement_crud.create(session, create_data, channel_id)
 
@@ -25,7 +25,7 @@ def delete_measurements_range(
     channel_id: int,
     epoch_since: float,
     installation=Depends(with_owner),
-    session=Depends(use_db),
+    session=Depends(pg_session),
 ):
     measurement_crud.delete_since(session, channel_id, epoch_since)
 
@@ -38,7 +38,7 @@ async def update_day_measurement_from_provider(
     month: int,
     year: int,
     do: BackgroundTasks,
-    session=Depends(use_db),
+    session=Depends(pg_session),
     provider=Depends(provider_of_installation),
 ):
     meter = meter_crud.get(session, id=meter_id)
@@ -58,11 +58,11 @@ async def update_month_measurement_from_provider(
     month: int,
     year: int,
     do: BackgroundTasks,
-    session=Depends(use_db),
+    session=Depends(pg_session),
     provider=Depends(provider_of_installation),
 ):
     do.add_task(
-        provider.get_month_measurements,
+        provider.fetch_month_measurements,
         session,
         meter_id,
         datetime(year, month, day=1).timestamp(),

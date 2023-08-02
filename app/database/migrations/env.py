@@ -23,7 +23,7 @@ if config.config_file_name:
 from app.database.models.base import BaseModel  # pylint: disable=wrong-import-position
 
 target_metadata = BaseModel.metadata
-database_url = env.DB.url + env.DB.name
+database_url = env.db_driver + env.db_url + env.db_name
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

@@ -8,20 +8,23 @@ load_dotenv()
 
 @dataclass
 class env:
-    # host: str  = getenv("HOST") #type: ignore
-    app_log_level: str = getenv("APP_LOG_LEVEL")  # type: ignore
+    app_log_level: str = getenv("API_LOG_LEVEL") or "INFO"
+    broker_url: str = getenv("BROKER_URL") or "redis://broker:6379"
 
-    class API:
-        # url: str = getenv("API_URL") #type: ignore
-        secretKey: str = getenv("SECRET_KEY")  # type: ignore
-        # BUG: only for alembic upgrades you need to disable the float operator
-        tokenExpireMinutes: float = float(getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))  # type: ignore
+    token_expire_minutes: str = getenv("TOKEN_EXPIRE_MINUTES")  # type: ignore
+    private_key: str = (
+        getenv("SIGN_KEY")
+        or "06b7a95639d25c7aa6cf66aa6c3b099f6f3e881810f4b93f7e8da25e094f56c8"
+    )
+    
+    db_user: str = getenv("DB_USER") or "super_kp"
+    db_password: str = getenv("DB_PASSWORD") or "super_kp"
 
-    class DB:
-        user: str = getenv("POSTGRES_USER")  # type: ignore
-        password: str = getenv("POSTGRES_PASSWORD")  # type: ignore
-        name: str = getenv("POSTGRES_DB_NAME")  # type: ignore
-        driver: str = "postgresql"
-        host: str = getenv("DB_HOST")  # type: ignore
-        port: str = getenv("DB_PORT")  # type: ignore
-        url: str = f"{driver}://{user}:{password}@{host}:{port}/"  # type: ignore
+    db_name: str = getenv("DB_NAME") or "energy"
+    db_driver: str = "postgresql"
+    db_async_driver: str = "postgresql+asyncpg"
+    db_host: str = getenv("DB_HOST") or "database"
+    db_port: str = getenv("DB_PORT") or "5432"
+    
+    #  prepend driver and append database name
+    db_url: str = f"://{db_user}:{db_password}@{db_host}:{db_port}/"

@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
 from app.api.dependencies.installation import (
+    get_all_installations,
     of_user,
     with_owner,
 )
@@ -10,7 +10,7 @@ from app.api.dependencies.user import current_active_user
 from app.core.error import HTTP_ERROR
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import use_db
+from app.database.session import pg_session, async_pg_session, Session, Session
 from app.database.crud.installation import installation_crud
 
 from app.schemas.installation import (
@@ -24,29 +24,32 @@ router = APIRouter()
 
 
 @router.post("")
-def new_installation(
+async def create_installation(
     create_data: InstallationCreateDTO,
     user: Annotated[UserModel, Depends(current_active_user)],
-    session: Annotated[Session, Depends(use_db)],
+    session: Annotated[Session, Depends(pg_session)],
 ):
     if user.installation_id and not user.is_superuser:
         HTTP_ERROR(406, "You already have an installation")
 
-    installation = installation_crud.create(session, create_data, user)
+    installation = installation_crud.create(session, create_data, user.email)
+    #  BUG: now only sets owner email on installation
+    #       need to set installation id on user for member check
+    # user.installation_id = new_installation.id
+    # session.commit()
+    return installation
 
-    return installation.__dict__
 
-
-@router.get("", response_model=InstallationPublic)
+@router.get("")
 def get_installation(installation: Annotated[InstallationModel, Depends(of_user)]):
-    return installation.__dict__
+    return installation
 
 
 @router.put("", response_model=InstallationPublic)
 def put_installation_of_user(
     update_data: InstallationUpdateDTO,
     installation: Annotated[InstallationModel, Depends(with_owner)],
-    session: Annotated[Session, Depends(use_db)],
+    session: Annotated[Session, Depends(pg_session)],
 ):
     updated_installation = installation_crud.update(session, installation, update_data)
 
@@ -58,11 +61,11 @@ def put_installation_of_user(
 #     return connected_user.__dict__
 
 
-# @router.get("/all", response_model=list[InstallationPublic])
-# def all_installations(
-#     installation_list=Depends(get_all_installations),
-# ):
-#     return installation_list
+@router.get("/all")
+def all_installations(
+    installation_list=Depends(get_all_installations),
+):
+    return installation_list
 
 
 # @router.get("/{installation_id}", response_model=InstallationPublic)

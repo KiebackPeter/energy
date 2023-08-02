@@ -1,29 +1,27 @@
-from pydantic import BaseModel
-
-from app.schemas.meter import MeterInBD
+from app.schemas.meter import MeterInBD, BaseModel
 
 
 class InstallationPublic(BaseModel):
     name: str
-    owner_email: str
-    provider_name: str | None
-    contracted_power_kw: int | None
-    contracted_power_m3: int | None
-    contracted_power_l: int | None
+    owner_email: str | None = None
+    contracted_power_kw: int | None = None
+    contracted_power_m3: int | None = None
+    contracted_power_l: int | None = None
 
 
-class InstallationCreateDTO(BaseModel):
-    name: str
-    provider_name: str | None
-    provider_key: str | None
+class InstallationProvider(InstallationPublic):
+    provider_name: str
+    provider_key: str
+
+class InstallationCreateDTO(InstallationProvider):
+    pass
 
 
-class InstallationUpdateDTO(InstallationCreateDTO):
-    name: str | None
-    contractor_email: str | None
-    contracted_power_kw: int | None
-    contracted_power_m3: int | None
-    contracted_power_l: int | None
+class InstallationUpdateDTO(BaseModel):
+    name: str | None = None
+    contracted_power_kw: int | None = None
+    contracted_power_m3: int | None = None
+    contracted_power_l: int | None = None
 
 
 class InstallationInDB(InstallationCreateDTO):

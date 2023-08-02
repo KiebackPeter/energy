@@ -1,14 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Optional
-
 import msgspec
 from httpx import AsyncClient
 
 from app.core.error import HTTP_ERROR
-from app.database.models.meter import MeterModel
 from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.measurements import MeasurementCreateDTO
 from app.schemas.meter import MeterCreateDTO
 
 
@@ -31,6 +27,7 @@ class BaseAdapter(ABC):
                 return response
 
             case 401:
+                print("adapter response:\n{response}")
                 HTTP_ERROR(404, "Credentials failed to authenticate on provider")
                 return [{"response": response}]
 
@@ -38,17 +35,17 @@ class BaseAdapter(ABC):
                 return [{"unhandled exception": response}]
 
     @abstractmethod
-    async def get_meter_list(self) -> list[MeterCreateDTO]:
+    def fetch_meter_list(self) -> list[MeterCreateDTO]:
         pass
 
     @abstractmethod
-    async def get_day_measurements(
+    def fetch_day_measurements(
         self, source_id: str, date: datetime
     ) -> list[ChannelWithMeasurements]:
         pass
 
     @abstractmethod
-    async def get_month_measurements(
+    async def fetch_month_measurements(
         self, source_id: str, date: datetime
     ) -> list[ChannelWithMeasurements]:
         pass

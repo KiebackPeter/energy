@@ -1,7 +1,7 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
-
-from app.core.implementations.base_crud import CRUDBase
+from sqlalchemy import select, insert
+from sqlalchemy.orm import selectinload, Session
+from app.core.implementations.base_crud import Session, CRUDBase  # ,log
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
 from app.schemas.installation import InstallationCreateDTO, InstallationUpdateDTO
@@ -11,17 +11,26 @@ class CRUDInstallation(
     CRUDBase[InstallationModel, InstallationCreateDTO, InstallationUpdateDTO]
 ):
     def create(
-        self, session: Session, create_obj: InstallationCreateDTO, current_user: UserModel
-    ) -> InstallationModel:
+        self,
+        session: Session,
+        create_obj: InstallationCreateDTO,
+        owner_email: str,
+    ):
         installation_data = jsonable_encoder(create_obj)
-        installation_data["owner_email"] = current_user.email
+        installation_data["owner_email"] = owner_email
 
-        new_installation = InstallationModel(**installation_data)
-        installation_model = self.commit(session, database_model=new_installation)
-        current_user.installation_id = installation_model.id
+        new_installation = session.scalar(
+            insert(self.model).values(installation_data).returning(self.model)
+        )
         session.commit()
-        # FIXME this should return an object
-        return installation_model
+        return new_installation
+
+    def get_with_meters(self, session: Session, installaiton_id: int):
+        return session.scalars(
+            select(self.model)
+            .filter(self.model.id == installaiton_id)
+            .options(selectinload(self.model.meters))
+        )
 
 
 # TODO connect multiple users to an installation

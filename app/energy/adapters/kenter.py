@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from app.core.logger import log
-from app.database.models.meter import MeterModel
 from app.energy.adapters.adapter import BaseAdapter
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.measurements import MeasurementCreateDTO
@@ -27,10 +26,11 @@ class KenterAdapter(BaseAdapter):
             case _:
                 return commodity
 
-    async def get_meter_list(self) -> list[MeterCreateDTO]:
+    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
 
         raw_meter_list = await self.make_request(self.base_url + "/meters")
+        
         meter_objects: list[MeterCreateDTO] = []
         for raw_meter in raw_meter_list:
             commodity = self.check_commodity(
@@ -104,7 +104,7 @@ class KenterAdapter(BaseAdapter):
 
         return measurements_per_channel
 
-    async def get_day_measurements(self, source_id: str, date: datetime):
+    async def fetch_day_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         connection_id, meting_point_id = source_id.split(":")
@@ -114,7 +114,7 @@ class KenterAdapter(BaseAdapter):
 
         return self.format_measurements(raw_measurements)
 
-    async def get_month_measurements(self, source_id: str, date: datetime):
+    async def fetch_month_measurements(self, source_id: str, date: datetime):
         """Get measurement values from a meter on a speficic day"""
 
         connection_id, meting_point_id = source_id.split(":")

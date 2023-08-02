@@ -1,25 +1,40 @@
-from fastapi import APIRouter, BackgroundTasks, Depends
-from app.api.helpers.installation import sync_installations
-from app.api.dependencies.user import current_active_superuser
+from fastapi import APIRouter, Depends
+from celery.result import AsyncResult
+from pydantic import BaseModel
+from app.database.models.installation import InstallationModel
+from app.energy import worker
 
+from app.api.dependencies.installation import get_all_installations, with_owner
 from app.api.dependencies.measurements import (
     delete_measurements_range,
     update_day_measurement_from_provider,
     update_month_measurement_from_provider,
 )
-from app.database.session import use_db
 
 router = APIRouter()
 
 # TODO https://github.com/testdrivenio/fastapi-celery/tree/master
 
-@router.get("/daily")
-async def fetch_measurements_for_all_installations(
-    do: BackgroundTasks,
-    session=Depends(use_db),
-    superuser=Depends(current_active_superuser),
+
+def _to_task_out(req: AsyncResult):
+    return {"id": req.task_id, "status": req.status}
+
+
+@router.get("/{task_id}/status")
+async def status(task_id: str):
+    req = AsyncResult(task_id)
+    return _to_task_out(req)
+
+
+@router.get("/update/installation/{installation_id}")
+def fetch_measurements_for_all_installations(
+    installation: InstallationModel = Depends(with_owner),
 ):
-    return await sync_installations(session, do)
+    task = worker.sync_installation.delay(
+        installation.id, installation.provider_name, installation.provider_key
+    )
+
+    return {"task": _to_task_out(task)}
 
 
 @router.get("/fetch/{meter_id}/day/{year}/{month}/{day}")

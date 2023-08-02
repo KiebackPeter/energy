@@ -1,62 +1,79 @@
 version: "3.8"
 
+# TODO: make custom docker images
 services:
-  database:
-    image: postgres
+  api:
+    build: .
     restart: always
-
-    ports:
-      - 5432  # :5432 append for forwarding to localhost
-    networks:
-      - database-network
-
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB_NAME}
-    volumes:
-      - energy-database:/var/lib/postgresql/data
-
-
-  energy:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
-    restart: always
-
     ports:
       - 443:8000
-    networks:
-      - database-network
-
-    env_file:
-      - .env
+    command: bash -c "alembic upgrade head && uvicorn app.main:api --proxy-headers --host 0.0.0.0 --ssl-keyfile app/core/certificates/star_kieback-peter.net-decrypted.key --ssl-certfile app/core/certificates/star_kieback-peter.net.crt --reload"
+    environment:
+      - API_LOG_LEVEL=${API_LOG_LEVEL}
+      - SIGN_KEY=${SIGN_KEY}
+      - TOKEN_EXPIRE_MINUTES=${TOKEN_EXPIRE_MINUTES}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     volumes:
       - ./app:/code/app
     depends_on:
+      - database-dashboard
+      - broker-dashboard
+
+  worker:
+    build: .
+    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=info"
+    volumes:
+      - ./app:/code/app
+    environment:
+      - CELERY_BROKER_URL=${BROKER_URL}
+      - CELERY_RESULT_BACKEND=${BROKER_URL}
+    depends_on:
+      - broker
       - database
 
+  broker:
+    image: redis:7
 
-  pgadmin:
+  database:
+    image: postgres
+    restart: always
+    ports:
+      - ${DB_PORT}:5432 # for forwarding to localhost
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - energy-database:/var/lib/postgresql/data
+
+  broker-dashboard:
+    build: .
+    command: celery --broker=${BROKER_URL} flower --port=5555
+    ports:
+      - 5555:5555
+    environment:
+      - CELERY_BROKER_URL=${BROKER_URL}
+      - CELERY_RESULT_BACKEND=${BROKER_URL}
+    depends_on:
+      - broker
+      - worker
+
+  database-dashboard:
     image: dpage/pgadmin4
-    
     ports:
       - 8080:80
-    networks:
-      - database-network
-
     environment:
-      - PGADMIN_DEFAULT_SERVER=localhost
+      - PGADMIN_DEFAULT_SERVER=${DB_HOST}
       - PGADMIN_DEFAULT_EMAIL=admin@kieback-peter.nl
       - PGADMIN_DEFAULT_PASSWORD=admin
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     depends_on:
       - database
-
-
-networks:
-  database-network:
 
 volumes:
   energy-database:
