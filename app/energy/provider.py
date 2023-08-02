@@ -95,7 +95,6 @@ class EnergyProvider:
             try:
                 measurement_crud.create(self._session, meausurement, local_channel.id)
             except Exception as err:
-                log.critical("%s", err)
                 continue
         self._session.commit()
 
@@ -128,40 +127,34 @@ class EnergyProvider:
         self,
         meter: MeterModel,
     ):
+        """
+        Check most recent 'local' measurement from channels
+        and,
+        fetch measurements from then or start 5 years back.
+        """
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         today = datetime.today()
-        latest_check = today - timedelta(days=(365 * 5))
-        
-        # TODO ugly check for latest known channel measurements
-        # channel_crud.get_by_channel_name_and_meter()
-        for meter in meter_crud.get_by_id_with_channels(self._session, meter.id):
-            for channel in meter.channels:
-                # Need channels 
-                if channel is None:
-                    last_known = latest_check
-                else:
-                    last_known = measurement_crud.latest_channel_measurement(
-                        self._session, channel.id
-                    )
-                if last_known is None:
-                    last_known = latest_check
+        last_known = today - timedelta(days=(365 * 5))
 
+        meter_with_channels = meter_crud.get_by_id_with_channels(
+            self._session, meter.id
+        )
+        if meter_with_channels and meter_with_channels.channels is not None:
+            for channel in meter.channels:
+                latest_check = measurement_crud.latest_channel_measurement(
+                    self._session, channel.id
+                )
+                # TODO fix, now checking only for most recent, missing, known measurement of channels
+                if latest_check is not None and latest_check > last_known:
+                    last_known = latest_check
 
         num_months = (
             (today.year - last_known.year) * 12 + (today.month - last_known.month) + 1
         )
-        if num_months >= 1:
-            for _ in range(num_months):
-                _ = await self.get_month_measurements(meter, last_known)
-                _, days_in_month = monthrange(last_known.year, last_known.month)
-                last_known = last_known.replace(day=days_in_month) + timedelta(days=1)
+        for _ in range(num_months):
+            _ = await self.get_month_measurements(meter, last_known)
+            _, days_in_month = monthrange(last_known.year, last_known.month)
+            last_known = last_known.replace(day=days_in_month) + timedelta(days=1)
 
-            return f"{meter.name} is up-to-date "
-        else:
-            num_days = today - last_known
-            for _ in range(num_days.days):
-                _ = await self.get_day_measurements(meter, last_known)
-                last_known += timedelta(days=1)
-
-            return f"{meter.name} is up-to-date "
+        return f"{meter.name} is up-to-date"

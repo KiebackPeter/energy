@@ -1,7 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import insert, select
 from sqlalchemy.orm import selectinload, Session
-from sqlalchemy.ext.asyncio import AsyncResult
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
@@ -21,11 +20,11 @@ class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):
         return new_meter
 
     def get_by_id_with_channels(self, session: Session, meter_id: int):
-        return session.scalars(
+        return session.scalar(
             select(MeterModel)
             .where(MeterModel.id == meter_id)
             .options(selectinload(MeterModel.channels))
-        ).all()
+        )
 
     def get_by_source_id(self, session: Session, source_id: str):
         return session.scalars(
