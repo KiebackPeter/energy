@@ -1,7 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import insert, select
 from sqlalchemy.orm import selectinload, Session
-from sqlalchemy.ext.asyncio import AsyncResult
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
