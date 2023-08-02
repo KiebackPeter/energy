@@ -1,11 +1,7 @@
-"""Installation table"""
-from .meter import MeterModel
-from .base_model import (
-    BaseModel,
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.core.implementations.base_model import BaseModel
+from app.database.models.meter import MeterModel
 
 
 class InstallationModel(BaseModel):

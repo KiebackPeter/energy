@@ -1,14 +1,10 @@
-"""Implementation for tums.nl"""
+from datetime import datetime
+from typing import Any
 
-from .base_adapter import (
-    BaseAdapter,
-    # datetime,
-    # log,
-    # ChannelWithMeasurements,
-    # MeterCreateDTO,
-    # MeasurementCreateDTO,
-)
-
+from app.core.logger import log
+from app.energy.adapters.adapter import BaseAdapter
+from app.schemas.measurements import MeasurementCreateDTO
+from app.schemas.meter import MeterCreateDTO, MeterInBD
 
 
 class TumsAdapter(BaseAdapter):

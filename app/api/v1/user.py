@@ -1,6 +1,5 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.user import current_active_user
@@ -18,8 +17,8 @@ def new_user(
     create_data: UserCreateDTO,
     session: Annotated[Session, Depends(pg_session)],
 ):
-    hash = user_crud.get_credentials(session, email=create_data.email)
-    if hash is not None:
+    email_check = user_crud.get_credentials(session, email=create_data.email)
+    if email_check.first() is not None:
         HTTP_ERROR(400, "This email already registered to a user")
 
     new_user = user_crud.create(session, create_data)
@@ -31,14 +30,23 @@ def get_user(current_user=Depends(current_active_user)):
     return current_user.__dict__
 
 
-@router.put("")
+@router.put("", response_model=UserPublic)
 def put_current_user(
     update_data: UserUpdateSelfDTO,
     user: Annotated[UserModel, Depends(current_active_user)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    updated_user = user_crud.update_user(session, user, update_data)
-    print(updated_user)
+    current_user_data = user.__dict__
+    user_in = UserUpdateSelfDTO(**current_user_data)
+
+    if update_data.password:
+        user_in.password = update_data.password
+    if update_data.full_name:
+        user_in.full_name = update_data.full_name
+    if update_data.email:
+        user_in.email = update_data.email
+    updated_user = user_crud.update_self(session, user, user_in)
+
     return updated_user.__dict__
 
 # @router.get("/all", response_model=list[User])

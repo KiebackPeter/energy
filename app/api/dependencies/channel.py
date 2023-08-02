@@ -24,7 +24,7 @@ async def channel_of_meter_by_id(
     session: Annotated[ Session, Depends(pg_session)],
     installation: Annotated[ InstallationModel, Depends(of_user)],
 ):
-    channel = channel_crud.get_by(session, id=channel_id)
+    channel = channel_crud.get(session, id=channel_id)
     for meter in installation.meters:
         if channel.meter_id == meter.id:
             return channel

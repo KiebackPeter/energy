@@ -1,9 +1,11 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import selectinload
-
+from sqlalchemy import insert, select
+from sqlalchemy.orm import selectinload, Session
+from sqlalchemy.ext.asyncio import AsyncResult
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
-from app.database.crud.base_crud  import Session, CRUDBase, select, insert  #, log,
+
+from app.core.implementations.base_crud import Session, CRUDBase  # ,log
 
 
 class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):

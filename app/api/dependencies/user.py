@@ -35,10 +35,12 @@ def current_active_superuser(
 
 
 def get_all_users(
+    skip: int | None,
+    limit: int | None,
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    users = user_crud.filter_by(session)
+    users = user_crud.get_multi(session, skip=skip, limit=limit)
 
     return users
 
@@ -48,7 +50,7 @@ def get_user_by_id(
     current_user: Annotated[UserModel, Depends(current_active_superuser)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    user = user_crud.get_by(session, id=user_id)
+    user = user_crud.get(session, id=user_id)
 
     return user
 
@@ -58,4 +60,4 @@ def update_user_by_id(
     user: Annotated[UserModel, Depends(get_user_by_id)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    return user_crud.update(session, user.id, *user_in)
+    return user_crud.update(session, user, user_in)

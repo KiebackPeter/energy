@@ -1,8 +1,8 @@
 from datetime import datetime
-from .base_schema import BaseSchema
+from pydantic import BaseModel
 
 
-class MeterPublic(BaseSchema):
+class MeterPublic(BaseModel):
     name: str
     commodity: str
     status: str
@@ -14,12 +14,12 @@ class MeterCreateDTO(MeterPublic):
     installed_at: datetime
 
 
-class MeterUpdateDTO(BaseSchema):
+class MeterUpdateDTO(BaseModel):
     name: str | None
     status: str | None
 
 
-class MeterUpdateQanteonIdDTO(BaseSchema):
+class MeterUpdateQanteonIdDTO(BaseModel):
     qanteon_name: str | None
     qanteon_id: int
 

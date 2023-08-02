@@ -1,13 +1,10 @@
-"""Implementation for kenter.nl"""
+from datetime import datetime
 
-from .base_adapter import (
-    BaseAdapter,
-    datetime,
-    log,
-    ChannelWithMeasurements,
-    MeterCreateDTO,
-    MeasurementCreateDTO,
-)
+from app.core.logger import log
+from app.energy.adapters.adapter import BaseAdapter
+from app.schemas.channel import ChannelWithMeasurements
+from app.schemas.measurements import MeasurementCreateDTO
+from app.schemas.meter import MeterCreateDTO
 
 
 # cmljaGFyZC52YW5kZW4uaGFtQHpud3Yubmw6VGlqZGVsaWprMTIz

@@ -1,15 +1,15 @@
-from .base_schema import BaseSchema
+from pydantic import BaseModel, EmailStr
 
 
-class Token(BaseSchema):
+class Token(BaseModel):
     access_token: str
     token_type: str
 
 
-class TokenPayload(BaseSchema):
+class TokenPayload(BaseModel):
     sub: int
 
 
-class TokenData(BaseSchema):
-    email: str | None = None
+class TokenData(BaseModel):
+    email: EmailStr | None = None
     scopes: list[str] = []

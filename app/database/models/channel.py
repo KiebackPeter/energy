@@ -1,12 +1,8 @@
-"""Channel table"""
-from .measurement import MeasurementModel
-from .base_model import (
-    ForeignKey,
-    BaseModel,
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.core.implementations.base_model import BaseModel
+from app.database.models.measurement import MeasurementModel
 
 
 class ChannelModel(BaseModel):
@@ -17,7 +13,8 @@ class ChannelModel(BaseModel):
     latest_measurement: Mapped[float] = mapped_column(nullable=True)
     meter_id: Mapped[int] = mapped_column(ForeignKey("meter.id"), index=True)
     measurements: Mapped[list[MeasurementModel]] = relationship(
-        "MeasurementModel",
-        backref="channel",
-        cascade="all, delete-orphan",
+    "MeasurementModel",
+    backref="channel",
+    cascade="all, delete-orphan",
     )
+    

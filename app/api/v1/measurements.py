@@ -11,7 +11,7 @@ from app.database.session import pg_session
 
 router = APIRouter()
 
-# TODO: worker task for recalculations
+# TODO: postgres trigger recalculations
 # @router.post("/{channel_id}")
 # def new_measurements(new_meter=Depends(create_measurement)):
 #     return new_meter

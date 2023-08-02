@@ -1,8 +1,9 @@
-from .base_schema import BaseSchema
-from .measurements import MeasurementCreateDTO
+from pydantic import BaseModel
+
+from app.schemas.measurements import MeasurementCreateDTO
 
 
-class ChannelPublic(BaseSchema):
+class ChannelPublic(BaseModel):
     name: str
 
 
@@ -10,17 +11,15 @@ class ChannelCreateDTO(ChannelPublic):
     pass
 
 
-class ChannelUpdateDTO(BaseSchema):
+class ChannelUpdateDTO(BaseModel):
     qanteon_name: str | None
     qanteon_id: int | None
-    latest_measurement: int | None
 
 
 class ChannelInBD(ChannelPublic):
     id: int
     meter_id: int
 
-
-class ChannelWithMeasurements(BaseSchema):
+class ChannelWithMeasurements(BaseModel):
     channel_name: str
     measurements: list[MeasurementCreateDTO]

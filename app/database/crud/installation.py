@@ -1,9 +1,10 @@
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import selectinload
-
+from sqlalchemy import select, insert
+from sqlalchemy.orm import selectinload, Session
+from app.core.implementations.base_crud import Session, CRUDBase  # ,log
 from app.database.models.installation import InstallationModel
+from app.database.models.user import UserModel
 from app.schemas.installation import InstallationCreateDTO, InstallationUpdateDTO
-from app.database.crud.base_crud  import Session, CRUDBase, select, insert  # , log,
 
 
 class CRUDInstallation(

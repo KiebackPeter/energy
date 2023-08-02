@@ -1,19 +1,19 @@
-from .base_schema import BaseSchema
+from pydantic import BaseModel, EmailStr
 
 
-class UserPublic(BaseSchema):
+class UserPublic(BaseModel):
     full_name: str
-    email: str
+    email: EmailStr
 
 
 class UserCreateDTO(UserPublic):
     password: str
 
 
-class UserUpdateSelfDTO(BaseSchema):
+class UserUpdateSelfDTO(BaseModel):
     password: str | None = None
     full_name: str | None = None
-    email: str | None = None
+    email: EmailStr | None = None
 
 
 class User(UserPublic):
