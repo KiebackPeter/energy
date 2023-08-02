@@ -1,13 +1,16 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict
 from fastapi.encoders import jsonable_encoder
-
 from passlib.context import CryptContext
-from sqlalchemy import select, insert
 
-from app.core.error import HTTP_ERROR
 from app.database.models.user import UserModel
 from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
-from app.core.implementations.base_crud import Session, CRUDBase # ,log
+from app.database.crud.base_crud import (
+    Session,
+    CRUDBase,
+    HTTP_ERROR,
+    select,
+    insert,
+)  # , log,
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -22,21 +25,18 @@ def get_password_hash(password: str) -> str:
 
 class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
     def create(self, session: Session, create_obj: UserCreateDTO):
-        
         user_data = jsonable_encoder(create_obj)
         del user_data["password"]
         user_data["hashed_password"] = get_password_hash(create_obj.password)
 
         return session.scalar(
-            insert(self.model)
-                .values(user_data)
-                .returning(self.model)
+            insert(self.model).values(user_data).returning(self.model)
         )
 
     def get_credentials(self, session: Session, email: str):
         return session.scalars(
-        select(self.model).where(self.model.email == email)
-        ).first()
+            select(self.model).where(self.model.email == email)
+        ).one_or_none()
 
     def is_active(self, user: UserModel) -> bool:
         return user.is_active
@@ -44,35 +44,30 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
     def is_superuser(self, user: UserModel) -> bool:
         return user.is_superuser
 
-
-    def authenticate(
-        self, session: Session, email: str, password: str
-    ):
+    def authenticate(self, session: Session, email: str, password: str):
         user = self.get_credentials(session, email=email)
-        
+
         if user is None:
             HTTP_ERROR(400, "Incorrect email")
 
         elif not verify_password(password, user.hashed_password):
             HTTP_ERROR(400, "Incorrect email and password")
 
-        return user
+        return True
 
-    def update_self(
+    def update_user(
         self,
         session: Session,
-        model: UserModel,
-        update_obj: Union[UserUpdateSelfDTO, Dict[str, Any]],
+        user: UserModel,
+        update_obj: UserUpdateSelfDTO,
     ):
-        update_data = jsonable_encoder(update_obj)
-        if update_data["password"]:
-            hashed_password = get_password_hash(update_data["password"])
+        update_data = jsonable_encoder(update_obj, exclude_defaults=True)
+        if update_obj.password is not None:
+            hashed_password = get_password_hash(update_obj.password)
             del update_data["password"]
             update_data["hashed_password"] = hashed_password
-
-        updated_user = self.update(session, database_model=model, update_obj=update_data)
-
-        return updated_user
+# TODO
+        return self.update(session, user, update_data)
 
 
 user_crud = CRUDUser(UserModel)

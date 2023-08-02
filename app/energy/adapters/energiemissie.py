@@ -1,11 +1,13 @@
-from datetime import datetime
+"""Implementation for energiemissie.nl"""
 
-from app.core.logger import log
-from app.database.models.meter import MeterModel
-from app.energy.adapters.adapter import BaseAdapter
-from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.measurements import MeasurementCreateDTO
-from app.schemas.meter import MeterCreateDTO
+from .base_adapter import (
+    BaseAdapter,
+    datetime,
+    log,
+    ChannelWithMeasurements,
+    MeterCreateDTO,
+    MeasurementCreateDTO,
+)
 
 
 class EnergiemissieAdapter(BaseAdapter):
@@ -60,9 +62,7 @@ class EnergiemissieAdapter(BaseAdapter):
                 count += 1
 
             measurements_per_channel.append(
-                ChannelWithMeasurements(
-                    channel_name=channel, measurements=measurements
-                )
+                ChannelWithMeasurements(channel_name=channel, measurements=measurements)
             )
 
         log.info("fetched %s measurements", count)

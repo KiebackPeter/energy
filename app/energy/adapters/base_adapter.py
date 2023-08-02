@@ -1,17 +1,20 @@
+"""Abstract implementation of an energy provider, with common imports"""
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timedelta
 import msgspec
 from httpx import AsyncClient
 
+from app.core.logger import log # TODO: create adapter logging
 from app.core.error import HTTP_ERROR
-from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
+from app.schemas.channel import ChannelWithMeasurements
+from app.schemas.measurements import MeasurementCreateDTO
 
 
 class BaseAdapter(ABC):
-    """ABC for different measurement providers"""
+    """ABC for different energy providers"""
 
-    def __init__(self, headers: dict[str, str] | None):
+    def __init__(self, headers: dict[str, str] | None = None):
         """Initialize the provider instance"""
         self.headers = headers
 
@@ -35,11 +38,11 @@ class BaseAdapter(ABC):
                 return [{"unhandled exception": response}]
 
     @abstractmethod
-    def fetch_meter_list(self) -> list[MeterCreateDTO]:
+    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         pass
 
     @abstractmethod
-    def fetch_day_measurements(
+    async def fetch_day_measurements(
         self, source_id: str, date: datetime
     ) -> list[ChannelWithMeasurements]:
         pass

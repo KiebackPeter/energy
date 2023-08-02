@@ -1,14 +1,19 @@
 from calendar import monthrange
-from datetime import datetime, timedelta
-from app.core.error import HTTP_ERROR
-from app.core.logger import log
+
 from app.database.session import session
+from app.database.models.meter import MeterModel
 from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
-from app.database.models.meter import MeterModel
-from app.energy.adapters import energiemissie, joulz, kenter
-from app.schemas.channel import ChannelWithMeasurements
+
+from .adapters import energiemissie, joulz, kenter
+from .adapters.base_adapter import (
+    datetime,
+    timedelta,
+    HTTP_ERROR,
+    log,
+    ChannelWithMeasurements,
+)
 
 
 class EnergyProvider:
@@ -97,6 +102,9 @@ class EnergyProvider:
             except Exception as err:
                 log.critical("%s", err)
                 continue
+
+        local_channel.latest_measurement = channel_data.measurements[-1].timestamp
+        channel_crud.update(session, local_channel, local_channel.__dict__)
         self._session.commit()
 
     async def get_day_measurements(

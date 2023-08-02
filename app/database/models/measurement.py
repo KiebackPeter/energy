@@ -1,7 +1,13 @@
-from sqlalchemy import PrimaryKeyConstraint, UniqueConstraint, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+"""Measurement table"""
+from .base_model import (
+    PrimaryKeyConstraint,
+    UniqueConstraint,
+    ForeignKey,
+    BaseModel,
+    Mapped,
+    mapped_column,
+)
 
-from app.core.implementations.base_model import BaseModel
 
 class MeasurementModel(BaseModel):
     __table_args__ = (

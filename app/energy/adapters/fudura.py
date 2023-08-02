@@ -1,13 +1,14 @@
-from datetime import datetime
-from typing import Any
+"""Implementation for fudura.nl"""
 
-from requests import post
+from .base_adapter import (
+    BaseAdapter,
+    datetime,
+    # log,
+    ChannelWithMeasurements,
+    MeterCreateDTO,
+    # MeasurementCreateDTO,
+)
 
-from app.core.logger import log
-from app.database.models.meter import MeterModel
-from app.energy.adapters.adapter import BaseAdapter
-from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.meter import MeterCreateDTO
 
 
 class FuduraAdapter(BaseAdapter):

@@ -10,7 +10,7 @@ from app.api.dependencies.user import current_active_user
 from app.core.error import HTTP_ERROR
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import pg_session, async_pg_session, Session, Session
+from app.database.session import pg_session, Session
 from app.database.crud.installation import installation_crud
 
 from app.schemas.installation import (
