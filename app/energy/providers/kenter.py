@@ -1,14 +1,14 @@
 from datetime import datetime
 
 from app.core.logger import log
-from app.energy.adapters.adapter import BaseAdapter
+from app.energy.providers.base_provider import BaseProvider
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.measurements import MeasurementCreateDTO
 from app.schemas.meter import MeterCreateDTO
 
 
 # cmljaGFyZC52YW5kZW4uaGFtQHpud3Yubmw6VGlqZGVsaWprMTIz
-class KenterAdapter(BaseAdapter):
+class KenterAdapter(BaseProvider):
     """A concrete implemetation working with the Kenter API"""
 
     def __init__(self, api_key) -> None:

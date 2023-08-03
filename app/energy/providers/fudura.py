@@ -5,12 +5,12 @@ from requests import post
 
 from app.core.logger import log
 from app.database.models.meter import MeterModel
-from app.energy.adapters.adapter import BaseAdapter
+from app.energy.providers.base_provider import BaseProvider
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
 
 
-class FuduraAdapter(BaseAdapter):
+class FuduraAdapter(BaseProvider):
     """A concrete implemetation working with the Kenter API"""
 
     def __init__(self, provider_key: str) -> None:

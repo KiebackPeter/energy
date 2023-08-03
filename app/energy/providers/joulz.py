@@ -3,13 +3,13 @@ from typing import Any
 
 from app.core.logger import log
 from app.database.models.meter import MeterModel
-from app.energy.adapters.adapter import BaseAdapter
+from app.energy.providers.base_provider import BaseProvider
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.measurements import MeasurementCreateDTO
 from app.schemas.meter import MeterCreateDTO
 
 
-class JoulzAdapter(BaseAdapter):
+class JoulzAdapter(BaseProvider):
     """A concrete implemetation working with the Joulz API"""
 
     def __init__(self, provider_key: str) -> None:

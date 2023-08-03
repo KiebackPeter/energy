@@ -7,51 +7,52 @@ from app.database.crud.meter import meter_crud
 from app.database.crud.channel import channel_crud
 from app.database.crud.measurement import measurement_crud
 from app.database.models.meter import MeterModel
-from app.energy.adapters import energiemissie, joulz, kenter
+from app.energy.providers import mock, energiemissie, joulz, kenter
 from app.schemas.channel import ChannelWithMeasurements
 
 
+def energy_provider_factory(provider_name: str, api_key: str):
+    match provider_name:
+        case "mock":  # test / demo adapter
+            return mock.MockAdapter(api_key)
+        case "energiemissie":
+            return energiemissie.EnergiemissieAdapter(api_key)
+        case "joulz":
+            return joulz.JoulzAdapter(api_key)
+        # case "fudura":
+        #     return fudura.FuduraAdapter(allation.api_api_key)
+        # case "tums":
+        #     return tums.TumsAdapter(allation.api_api_key)
+        case "kenter":
+            return kenter.KenterAdapter(api_key)
+        case _:
+            return HTTP_ERROR(
+                404,
+                f"We do not support: {provider_name} as energy provider",
+            )
+
+
 class EnergyProvider:
-    """A service to work with different sorts of BaseAdapters"""
+    """A service to work with different sorts of BaseProviders"""
 
     def __init__(self, installation_id: int, provider_name: str, provider_key: str):
         self.installation_id = installation_id
 
-        self.api_name = provider_name
-        self.api_key = provider_key
-
         self._session = session
-        self._adapter = self.adapter
+        self._provider = energy_provider_factory(provider_name, provider_key)
 
-        log.info("energyprovider used: %s", self.api_name)
-
-    @property
-    def adapter(self):
-        """Give adapter for the provider"""
-
-        match self.api_name:
-            case "energiemissie":
-                return energiemissie.EnergiemissieAdapter(self.api_key)
-            case "joulz":
-                return joulz.JoulzAdapter(self.api_key)
-            # case "fudura":
-            #     return fudura.FuduraAdapter(self.installation.api_key)
-            # case "tums":
-            #     return tums.TumsAdapter(self.installation.api_key)
-            case "kenter":
-                return kenter.KenterAdapter(self.api_key)
-            case _:
-                return HTTP_ERROR(
-                    404,
-                    f"We do not support: {self.api_name} as energy provider",
-                )
+        log.info(
+            "energyprovider used: %s for instalation_id: %s",
+            provider_name,
+            installation_id,
+        )
 
     async def update_meter_list(self):
         """Uses the adapter's method to get a meter list"""
 
         new_meters: list[MeterModel] = []
         local_meters: list[MeterModel] = []
-        remote_meters = await self._adapter.fetch_meter_list()
+        remote_meters = await self._provider.fetch_meter_list()
 
         for meter in remote_meters:
             local_meter = meter_crud.get_by_source_id(self._session, meter.source_id)
@@ -103,7 +104,7 @@ class EnergyProvider:
     ) -> list[ChannelWithMeasurements]:
         """Uses the adapter's method to get a measuement list of a day"""
 
-        day_measurements_per_channel = await self._adapter.fetch_day_measurements(
+        day_measurements_per_channel = await self._provider.fetch_day_measurements(
             meter.source_id, date
         )
         for raw_channel in day_measurements_per_channel:
@@ -115,7 +116,7 @@ class EnergyProvider:
         self, meter: MeterModel, date: datetime
     ) -> list[ChannelWithMeasurements]:
         """Returns measurement objects from a meter on a speficic month"""
-        month_measurements_per_channel = await self._adapter.fetch_month_measurements(
+        month_measurements_per_channel = await self._provider.fetch_month_measurements(
             meter.source_id, date
         )
         for raw_channel in month_measurements_per_channel:
