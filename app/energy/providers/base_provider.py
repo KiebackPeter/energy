@@ -8,7 +8,7 @@ from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.meter import MeterCreateDTO
 
 
-class BaseAdapter(ABC):
+class BaseProvider(ABC):
     """ABC for different measurement providers"""
 
     def __init__(self, headers: dict[str, str] | None):
@@ -35,11 +35,11 @@ class BaseAdapter(ABC):
                 return [{"unhandled exception": response}]
 
     @abstractmethod
-    def fetch_meter_list(self) -> list[MeterCreateDTO]:
+    async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         pass
 
     @abstractmethod
-    def fetch_day_measurements(
+    async def fetch_day_measurements(
         self, source_id: str, date: datetime
     ) -> list[ChannelWithMeasurements]:
         pass
