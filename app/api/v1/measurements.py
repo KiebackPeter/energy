@@ -52,8 +52,7 @@ def month_measurements(
 ):
     date_from = datetime(year, month, 1)
     _, days_in_month = monthrange(date_from.year, date_from.month)
-    date_till = date_from
-    date_till.replace(day=days_in_month) + timedelta(days=1)
+    date_till = date_from.replace(day=days_in_month) + timedelta(days=1)
     
     measurements = measurement_crud.get_with_date_range(
         session,
