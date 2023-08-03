@@ -1,14 +1,13 @@
 from datetime import datetime
 
 from app.core.logger import log
-from app.database.models.meter import MeterModel
-from app.energy.adapters.adapter import BaseAdapter
+from app.energy.providers.base_provider import BaseProvider
 from app.schemas.channel import ChannelWithMeasurements
 from app.schemas.measurements import MeasurementCreateDTO
 from app.schemas.meter import MeterCreateDTO
 
 
-class EnergiemissieAdapter(BaseAdapter):
+class EnergiemissieAdapter(BaseProvider):
     """A concrete implemetation working with the energiemissie API"""
 
     def __init__(self, provider_key: str) -> None:
