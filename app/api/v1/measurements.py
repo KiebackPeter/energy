@@ -1,13 +1,13 @@
-from datetime import datetime
+from calendar import monthrange
+from datetime import datetime, timedelta
 from typing import Annotated
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 from app.api.dependencies.installation import with_owner
 
 from app.database.crud.measurement import measurement_crud
 
 from app.database.models.installation import InstallationModel
-from app.database.session import pg_session
+from app.database.session import pg_session, Session
 
 router = APIRouter()
 
@@ -31,11 +31,12 @@ def day_measurements(
     installation: Annotated[InstallationModel, Depends(with_owner)],
     session: Annotated[Session, Depends(pg_session)],
 ):
+    date_from = datetime(year, month, day)
     measurements = measurement_crud.get_with_date_range(
         session,
         channel_id=channel_id,
-        from_date=datetime(year, month, day).timestamp(),
-        till_date=datetime(year, month, day + 1).timestamp(),
+        from_date=date_from.timestamp(),
+        till_date=(date_from + timedelta(days=1)).timestamp(),
     )
 
     return measurements
@@ -49,11 +50,16 @@ def month_measurements(
     installation: Annotated[InstallationModel, Depends(with_owner)],
     session: Annotated[Session, Depends(pg_session)],
 ):
+    date_from = datetime(year, month, 1)
+    _, days_in_month = monthrange(date_from.year, date_from.month)
+    date_till = date_from
+    date_till.replace(day=days_in_month) + timedelta(days=1)
+    
     measurements = measurement_crud.get_with_date_range(
         session,
         channel_id=channel_id,
-        from_date=datetime(year, month, 1).timestamp(),
-        till_date=datetime(year, month + 1, 1).timestamp(),
+        from_date=date_from.timestamp(),
+        till_date=date_till.timestamp(),
     )
 
     return measurements

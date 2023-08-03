@@ -20,13 +20,12 @@ def of_user(
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation_id: int | None = None,
 ):
-    # BUG doesnt pick up installation id?
     if installation_id and current_user.is_superuser: 
         installation = installation_crud.get(session, installation_id)
         return installation
 
-    elif current_user.installation_id:
-        installation = installation_crud.get_with_meters(
+    else:
+        installation = installation_crud.get(
             session, current_user.installation_id
         )
         return installation
