@@ -55,7 +55,7 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None
     app.dependency_overrides[pg_session] = _get_test_db
     with TestClient(app) as client:
         yield client
-from app.main import api
+from app.api.main import api
 
 engine = create_engine(
     env.DB.url + env.DB.name,
