@@ -148,6 +148,7 @@ class EnergyProvider:
                 )
                 # TODO fix, now checking only for most recent, missing, known measurement of channels
                 if latest_check is not None and latest_check > last_known:
+                    print(f"FOUND LAST_KOWN: {last_known}")
                     last_known = latest_check
 
         num_months = (
