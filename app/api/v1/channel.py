@@ -17,7 +17,7 @@ async def put_channel_qanteon_name(
     channel: Annotated[ChannelModel, Depends(channel_of_meter_by_id)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    updated_channel = channel_crud.update(
+    updated_channel = channel_crud.put(
         session, channel, updated_data.dict(exclude_none=True)
     )
-    return updated_channel
+    return updated_channel.to_dict()

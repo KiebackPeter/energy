@@ -59,17 +59,21 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
 
         return database_models
 
-    def update(
+    def put(
         self,
         session: Session,
         database_model: DatabaseModel,
         update_obj: Dict[str, Any],
     ) -> DatabaseModel:
-        updated_values = update_obj.keys()
+        primary_keys = database_model.primary_keys()
 
-        for field in updated_values:
-            setattr(database_model, field, update_obj[field])
-        update_model = jsonable_encoder(database_model)
-        del update_model["id"]
-        session.scalar(update(self.model).values(update_model).returning(self.model))
-        return update_model
+        for field, value in update_obj.items():
+            if field not in primary_keys:
+                setattr(database_model, field, value)
+        try:
+            session.commit()
+        except Exception as err:
+            print(f"update error: {err}")
+            session.rollback()
+
+        return database_model

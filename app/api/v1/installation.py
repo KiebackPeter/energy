@@ -51,12 +51,11 @@ def put_installation_of_user(
     installation: Annotated[InstallationModel, Depends(with_owner)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    print(update_data.dict())
-    updated_installation = installation_crud.update(
+    updated_installation = installation_crud.put(
         session, installation, update_data.dict(exclude_none=True)
     )
 
-    return updated_installation
+    return updated_installation.to_dict()
 
 
 # @router.post("/add_user/")

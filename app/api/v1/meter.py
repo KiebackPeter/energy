@@ -55,8 +55,8 @@ def put_meter_by_id(
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    updated_meter = meter_crud.update(
+    updated_meter = meter_crud.put(
         session, meter, update_data.dict(exclude_none=True)
     )
 
-    return updated_meter
+    return updated_meter.to_dict()

@@ -38,7 +38,7 @@ def put_current_user(
 ):
     updated_user = user_crud.update_self(session, user, update_data.dict(exclude_none=True))
 
-    return updated_user
+    return updated_user.to_dict()
 
 # @router.get("/all", response_model=list[User])
 # def all_users(user_list=Depends(get_all_users)):

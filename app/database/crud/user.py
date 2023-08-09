@@ -63,7 +63,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateDTO, UserPublic]):
             del update_obj["password"]
             update_obj["hashed_password"] = hashed_password
 
-        updated_user = self.update(session, database_model=model, update_obj=update_obj)
+        updated_user = self.put(session, database_model=model, update_obj=update_obj)
 
         return updated_user
 
