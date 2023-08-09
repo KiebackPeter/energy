@@ -1,9 +1,8 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.implementations.base_model import BaseModel
 from app.database.models.measurement import MeasurementModel
-
+from app.database.models.base_model import BaseModel
 
 class ChannelModel(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

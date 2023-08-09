@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload, Session
 from app.database.models.meter import MeterModel
 from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
-from app.core.implementations.base_crud import Session, CRUDBase  # ,log
+from app.database.crud.base_crud import Session, CRUDBase  # ,log
 
 
 class CRUDMeter(CRUDBase[MeterModel, MeterCreateDTO, MeterUpdateDTO]):

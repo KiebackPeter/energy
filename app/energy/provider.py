@@ -1,5 +1,8 @@
 from calendar import monthrange
 from datetime import datetime, timedelta
+from asyncpg import DataError
+
+from sqlalchemy.exc import DBAPIError, SQLAlchemyError, StatementError
 from app.core.error import HTTP_ERROR
 from app.core.logger import log
 from app.database.session import session
@@ -92,12 +95,16 @@ class EnergyProvider:
             local_channel.id,
         )
         for meausurement in channel_data.measurements:
-            # TODO correct execpt and callback
             try:
                 measurement_crud.create(self._session, meausurement, local_channel.id)
-            except Exception as err:
-                continue
-        self._session.commit()
+            except (SQLAlchemyError, DBAPIError, StatementError, DataError):
+                session.rollback()
+
+        channel_crud.put(
+            self._session,
+            local_channel,
+            {"latest_measurement": channel_data.measurements[-1].timestamp},
+        )
 
     async def get_day_measurements(
         self, meter: MeterModel, date: datetime
@@ -144,9 +151,7 @@ class EnergyProvider:
         )
         if meter_with_channels and meter_with_channels.channels is not None:
             for channel in meter.channels:
-                latest_check = measurement_crud.latest_channel_measurement(
-                    self._session, channel.id
-                )
+                latest_check = datetime.fromtimestamp(channel.latest_measurement)
                 # TODO fix, now checking only for most recent, missing, known measurement of channels
                 if latest_check is not None and latest_check > last_known:
                     print(f"FOUND LAST_KOWN: {last_known}")
@@ -159,5 +164,7 @@ class EnergyProvider:
             _ = await self.get_month_measurements(meter, last_known)
             _, days_in_month = monthrange(last_known.year, last_known.month)
             last_known = last_known.replace(day=days_in_month) + timedelta(days=1)
-
+            
+        self._session.commit()
+        
         return f"{meter.name} is up-to-date"

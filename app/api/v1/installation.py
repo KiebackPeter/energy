@@ -10,7 +10,7 @@ from app.api.dependencies.user import current_active_user
 from app.core.error import HTTP_ERROR
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
-from app.database.session import pg_session, async_pg_session, Session, Session
+from app.database.session import pg_session, Session, Session
 from app.database.crud.installation import installation_crud
 
 from app.schemas.installation import (
@@ -51,9 +51,11 @@ def put_installation_of_user(
     installation: Annotated[InstallationModel, Depends(with_owner)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    updated_installation = installation_crud.update(session, installation, update_data)
+    updated_installation = installation_crud.put(
+        session, installation, update_data.dict(exclude_none=True)
+    )
 
-    return updated_installation.__dict__
+    return updated_installation.to_dict()
 
 
 # @router.post("/add_user/")
