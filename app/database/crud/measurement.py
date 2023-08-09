@@ -5,7 +5,7 @@ from sqlalchemy import desc, select, insert
 from sqlalchemy.exc import IntegrityError
 from app.database.models.measurement import MeasurementModel
 from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
-from app.core.implementations.base_crud import Session, CRUDBase # ,log
+from app.database.crud.base_crud import Session, CRUDBase # ,log
 
 # NOTE: accumulated values come from sql trigger.
 # FIXME: cannot create many for the same channel

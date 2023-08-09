@@ -3,7 +3,8 @@ from sqlalchemy import select, insert
 from sqlalchemy.orm import selectinload
 from app.database.models.channel import ChannelModel
 from app.schemas.channel import ChannelCreateDTO, ChannelUpdateDTO
-from app.core.implementations.base_crud import log, Session, CRUDBase  # ,log
+
+from app.database.crud.base_crud import log, Session, CRUDBase  # ,log
 
 
 class CRUDChannel(CRUDBase[ChannelModel, ChannelCreateDTO, ChannelUpdateDTO]):

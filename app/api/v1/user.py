@@ -36,16 +36,7 @@ def put_current_user(
     user: Annotated[UserModel, Depends(current_active_user)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    current_user_data = user.__dict__
-    user_in = UserUpdateSelfDTO(**current_user_data)
-
-    if update_data.password:
-        user_in.password = update_data.password
-    if update_data.full_name:
-        user_in.full_name = update_data.full_name
-    if update_data.email:
-        user_in.email = update_data.email
-    updated_user = user_crud.update_self(session, user, user_in)
+    updated_user = user_crud.update_self(session, user, update_data.dict(exclude_none=True))
 
     return updated_user
 
