@@ -25,9 +25,8 @@ async def channel_of_meter_by_id(
     installation: Annotated[ InstallationModel, Depends(of_user)],
 ):
     channel = channel_crud.get(session, id=channel_id)
-    if channel:
-        for meter in installation.meters:
-            if channel.meter_id == meter.id:
-                return channel
+    for meter in installation.meters:
+        if channel.meter_id == meter.id:
+            return channel
 
     return HTTP_ERROR(400, "You do not have enough privileges")

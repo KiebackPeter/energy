@@ -18,7 +18,7 @@ def new_user(
     session: Annotated[Session, Depends(pg_session)],
 ):
     email_check = user_crud.get_credentials(session, email=create_data.email)
-    if email_check is not None:
+    if email_check.first() is not None:
         HTTP_ERROR(400, "This email already registered to a user")
 
     new_user = user_crud.create(session, create_data)
@@ -47,7 +47,7 @@ def put_current_user(
         user_in.email = update_data.email
     updated_user = user_crud.update_self(session, user, user_in)
 
-    return updated_user
+    return updated_user.__dict__
 
 # @router.get("/all", response_model=list[User])
 # def all_users(user_list=Depends(get_all_users)):

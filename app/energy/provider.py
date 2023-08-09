@@ -136,8 +136,7 @@ class EnergyProvider:
         log.info("updating measurements for meter: %s id: %s", meter.name, meter.id)
 
         today = datetime.today()
-        five_years_ago = today - timedelta(days=365 * 5)
-        last_known = five_years_ago.replace(month=1, day=1, hour=0, minute=0, second=0)
+        last_known = today - timedelta(days=(365 * 5))
 
         meter_with_channels = meter_crud.get_by_id_with_channels(
             self._session, meter.id
@@ -149,7 +148,6 @@ class EnergyProvider:
                 )
                 # TODO fix, now checking only for most recent, missing, known measurement of channels
                 if latest_check is not None and latest_check > last_known:
-                    print(f"FOUND LAST_KOWN: {last_known}")
                     last_known = latest_check
 
         num_months = (
