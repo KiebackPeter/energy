@@ -42,7 +42,6 @@ def day_measurements(
         till_date=date_till.timestamp(),
     
     )
-    print(date_till)
     return measurements
 
 
