@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.implementations.base_model import BaseModel
+from app.database.models.base_model import BaseModel
 from app.database.models.channel import ChannelModel
 
 
