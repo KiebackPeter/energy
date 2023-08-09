@@ -57,7 +57,7 @@ def month_measurements(
     _, days_in_month = monthrange(date_from.year, date_from.month)
       
     if date_from.month == 12:
-        date_till = date_from.replace(day=days_in_month) + timedelta(days=1)- timedelta(seconds=1)
+        date_till = date_from.replace(day=days_in_month) + timedelta(days=1, seconds=-1)
     else:
         date_till = date_from.replace(day=days_in_month) + timedelta(days=1)
     
