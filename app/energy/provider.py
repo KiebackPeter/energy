@@ -97,14 +97,17 @@ class EnergyProvider:
         for meausurement in channel_data.measurements:
             try:
                 measurement_crud.create(self._session, meausurement, local_channel.id)
-            except (SQLAlchemyError, DBAPIError, StatementError, DataError):
+            except (SQLAlchemyError, DBAPIError, StatementError, DataError) as err:
+                # print("Error creating measurement", err)
                 session.rollback()
+                continue
 
         channel_crud.put(
             self._session,
             local_channel,
             {"latest_measurement": channel_data.measurements[-1].timestamp},
         )
+        self._session.commit()
 
     async def get_day_measurements(
         self, meter: MeterModel, date: datetime
@@ -151,11 +154,14 @@ class EnergyProvider:
         )
         if meter_with_channels and meter_with_channels.channels is not None:
             for channel in meter.channels:
-                latest_check = datetime.fromtimestamp(channel.latest_measurement)
+                # latest_check = datetime.fromtimestamp(channel.latest_measurement)
+                latest_check = measurement_crud.latest_channel_measurement(
+                    self._session, channel.id
+                )
                 # TODO fix, now checking only for most recent, missing, known measurement of channels
                 if latest_check is not None and latest_check > last_known:
-                    print(f"FOUND LAST_KOWN: {last_known}")
                     last_known = latest_check
+                    print(f"FOUND LAST_KOWN: {last_known}")
 
         num_months = (
             (today.year - last_known.year) * 12 + (today.month - last_known.month) + 1
