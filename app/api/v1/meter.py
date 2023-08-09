@@ -37,8 +37,8 @@ def get_meter_by_id(
     session: Annotated[Session, Depends(pg_session)],
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
 ):
-
     return meter_crud.get_by_id_with_channels(session, meter.id)
+
 
 @router.get("/{meter_id}/channels")
 def all_meter_channels(
@@ -48,12 +48,15 @@ def all_meter_channels(
     channels = meter_crud.get_by_id_with_channels(session, meter.id)
     return channels
 
+
 @router.put("/{meter_id}", response_model=MeterPublic)
 def put_meter_by_id(
     update_data: MeterUpdateDTO,
     meter: Annotated[MeterModel, Depends(meter_of_installation_by_id)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    updated_meter = meter_crud.update(session, meter, update_data)
+    updated_meter = meter_crud.put(
+        session, meter, update_data.dict(exclude_none=True)
+    )
 
-    return updated_meter.__dict__
+    return updated_meter.to_dict()

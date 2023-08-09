@@ -9,7 +9,7 @@ from asyncpg import UniqueViolationError
 from sqlalchemy.orm import Session
 from app.core.logger import log  # create cutstom crud logger
 from app.core.error import HTTP_ERROR
-from app.core.implementations.base_model import BaseModel
+from app.database.models.base_model import BaseModel
 
 DatabaseModel = TypeVar("DatabaseModel", bound=BaseModel)
 CreateDTO = TypeVar("CreateDTO", bound=DTO)
@@ -42,10 +42,7 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
     #         return err
 
     def get(self, session: Session, id: int):
-        result = session.scalars(
-            select(self.model)
-            .filter_by(id = id)
-        ).one_or_none()
+        result = session.scalars(select(self.model).filter_by(id=id)).one_or_none()
         return result
 
     def get_multi(
@@ -62,29 +59,21 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
 
         return database_models
 
-    def update(
+    def put(
         self,
         session: Session,
-        database_model: DatabaseModel | Dict[str, Any],
-        update_obj: UpdateDTO | Dict[str, Any],
+        database_model: DatabaseModel,
+        update_obj: Dict[str, Any],
     ) -> DatabaseModel:
+        primary_keys = database_model.primary_keys()
 
-        if isinstance(database_model, dict):
-            del database_model["_sa_instance_state"]
-            database_model = self.model(**database_model)
+        for field, value in update_obj.items():
+            if field not in primary_keys:
+                setattr(database_model, field, value)
+        try:
+            session.commit()
+        except Exception as err:
+            print(f"update error: {err}")
+            session.rollback()
 
-        obj = jsonable_encoder(database_model)
-
-        if isinstance(update_obj, dict):
-            update_data = update_obj
-        else:
-            update_data = update_obj.dict(exclude_unset=True)
-
-        for field in obj:
-            if field in update_data:
-                setattr(database_model, field, update_data[field])
-
-        session.scalar(
-            update(self.model).values(database_model.__dict__)
-        )
         return database_model
