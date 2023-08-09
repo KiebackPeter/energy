@@ -69,7 +69,7 @@ class CRUDBase(Generic[DatabaseModel, CreateDTO, UpdateDTO]):
 
         for field in updated_values:
             setattr(database_model, field, update_obj[field])
-
         update_model = jsonable_encoder(database_model)
+        del update_model["id"]
         session.scalar(update(self.model).values(update_model).returning(self.model))
         return update_model

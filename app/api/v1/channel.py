@@ -13,9 +13,11 @@ router = APIRouter()
 
 @router.put("/{channel_id}/qanteon_name")
 async def put_channel_qanteon_name(
-    updated_obj: ChannelUpdateDTO,
+    updated_data: ChannelUpdateDTO,
     channel: Annotated[ChannelModel, Depends(channel_of_meter_by_id)],
     session: Annotated[Session, Depends(pg_session)],
 ):
-    updated_channel = channel_crud.update(session, (channel.__dict__), updated_obj)
-    return updated_channel.__dict__
+    updated_channel = channel_crud.update(
+        session, channel, updated_data.dict(exclude_none=True)
+    )
+    return updated_channel
