@@ -3,11 +3,12 @@ version: "3.8"
 # TODO: make custom docker images
 services:
   api:
-    build: .
+    build:
+      context: app
+      dockerfile: api/api.Dockerfile
     restart: always
     ports:
       - 443:8000
-    command: bash -c "alembic upgrade head && uvicorn app.main:api --proxy-headers --host 0.0.0.0 --ssl-keyfile app/core/certificates/star_kieback-peter.net-decrypted.key --ssl-certfile app/core/certificates/star_kieback-peter.net.crt --reload"
     environment:
       - API_LOG_LEVEL=${API_LOG_LEVEL}
       - SIGN_KEY=${SIGN_KEY}
@@ -18,14 +19,14 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
     volumes:
-      - ./app:/code/app
+      - ./app/api:/code/app
     depends_on:
-      - database-dashboard
-      - broker-dashboard
+      - worker
 
   worker:
-    build: .
-    command: bash -c "watchmedo auto-restart -d app/ -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=info"
+    build:
+      context: app
+      dockerfile: energy/energy.Dockerfile
     volumes:
       - ./app:/code/app
     environment:
@@ -34,6 +35,18 @@ services:
     depends_on:
       - broker
       - database
+
+  # admin:
+  #   build: app/admin
+  #   command: bash -c "
+  #   volumes:
+  #     - ./app:/code/app
+  #   # environment:
+  #   #   - CELERY_BROKER_URL=${BROKER_URL}
+  #   #   - CELERY_RESULT_BACKEND=${BROKER_URL}
+  #   depends_on:
+  #     - api
+  #     - worker
 
   broker:
     image: redis:7

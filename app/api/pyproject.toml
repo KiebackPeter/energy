@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "energy-api"
+version = "1.1"
+description = ""
+authors = ["stijn"]
+readme = "README.md"
+packages = [{include = "energy_api"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+uvicorn = "^0.23.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

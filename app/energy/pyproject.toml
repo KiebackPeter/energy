@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "energy-worker"
+version = "0.1.1"
+description = ""
+authors = ["stijn"]
+readme = "README.md"
+packages = [{include = "energy_worker"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+celery = {extras = ["redis"], version = "^5.3.1"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
