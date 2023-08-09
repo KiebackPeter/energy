@@ -32,13 +32,16 @@ def day_measurements(
     session: Annotated[Session, Depends(pg_session)],
 ):
     date_from = datetime(year, month, day)
+    
+    date_till = date_from + timedelta(days=1, seconds=-1)
+           
     measurements = measurement_crud.get_with_date_range(
         session,
         channel_id=channel_id,
         from_date=date_from.timestamp(),
-        till_date=(date_from + timedelta(days=1)).timestamp(),
+        till_date=date_till.timestamp(),
+    
     )
-
     return measurements
 
 
@@ -52,13 +55,17 @@ def month_measurements(
 ):
     date_from = datetime(year, month, 1)
     _, days_in_month = monthrange(date_from.year, date_from.month)
-    date_till = date_from.replace(day=days_in_month) + timedelta(days=1)
+      
+    if date_from.month == 12:
+        date_till = date_from.replace(day=days_in_month) + timedelta(days=1, seconds=-1)
+    else:
+        date_till = date_from.replace(day=days_in_month) + timedelta(days=1)
     
     measurements = measurement_crud.get_with_date_range(
-        session,
+        session,    
         channel_id=channel_id,
         from_date=date_from.timestamp(),
         till_date=date_till.timestamp(),
+       
     )
-
     return measurements
