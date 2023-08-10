@@ -1,4 +1,4 @@
-from app.schemas.meter import MeterInBD, BaseModel
+from app.database.schemas.meter import MeterInBD, BaseModel
 
 
 class InstallationPublic(BaseModel):

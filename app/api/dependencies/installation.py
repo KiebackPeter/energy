@@ -9,7 +9,7 @@ from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
 from app.database.session import pg_session
 from app.energy.provider import EnergyProvider, energy_provider_factory
-from app.schemas.installation import InstallationUpdateDTO
+from app.database.schemas.installation import InstallationUpdateDTO
 
 
 # Guard dependencies

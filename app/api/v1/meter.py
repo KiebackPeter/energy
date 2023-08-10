@@ -7,7 +7,7 @@ from app.api.dependencies.meter import meter_of_installation_by_id
 from app.database.models.installation import InstallationModel
 from app.database.models.meter import MeterModel
 from app.database.session import pg_session
-from app.schemas.meter import MeterCreateDTO, MeterPublic, MeterUpdateDTO
+from app.database.schemas.meter import MeterCreateDTO, MeterPublic, MeterUpdateDTO
 from app.database.crud.meter import meter_crud
 
 router = APIRouter()

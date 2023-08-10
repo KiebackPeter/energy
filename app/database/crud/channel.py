@@ -2,7 +2,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, insert
 from sqlalchemy.orm import selectinload
 from app.database.models.channel import ChannelModel
-from app.schemas.channel import ChannelCreateDTO, ChannelUpdateDTO
+from app.database.schemas.channel import ChannelCreateDTO, ChannelUpdateDTO
 
 from app.database.crud.base_crud import log, Session, CRUDBase  # ,log
 

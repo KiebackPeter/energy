@@ -12,7 +12,7 @@ from app.database.crud.measurement import measurement_crud
 from app.database.models.meter import MeterModel
 from app.energy.providers import mock, energiemissie, joulz, kenter
 from app.energy.providers.base_provider import BaseProvider
-from app.schemas.channel import ChannelWithMeasurements
+from app.database.schemas.channel import ChannelWithMeasurements
 
 
 def energy_provider_factory(provider_name: str, api_key: str):

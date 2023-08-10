@@ -7,7 +7,7 @@ from app.core.error import HTTP_ERROR
 from app.database.crud.user import user_crud
 from app.database.models.user import UserModel
 from app.database.session import pg_session
-from app.schemas.user import UserPublic
+from app.database.schemas.user import UserPublic
 
 
 # Guard dependencies

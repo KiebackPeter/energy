@@ -13,7 +13,7 @@ from app.database.models.user import UserModel
 from app.database.session import pg_session, Session, Session
 from app.database.crud.installation import installation_crud
 
-from app.schemas.installation import (
+from app.database.schemas.installation import (
     InstallationCreateDTO,
     InstallationPublic,
     InstallationUpdateDTO,

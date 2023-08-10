@@ -7,7 +7,7 @@ from app.core.error import HTTP_ERROR
 from app.database.models.user import UserModel
 from app.database.session import pg_session
 from app.database.crud.user import user_crud
-from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
+from app.database.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
 
 router = APIRouter()
 

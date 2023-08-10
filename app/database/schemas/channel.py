@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.measurements import MeasurementCreateDTO
+from app.database.schemas.measurements import MeasurementCreateDTO
 
 
 class ChannelPublic(BaseModel):

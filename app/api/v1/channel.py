@@ -6,7 +6,7 @@ from app.api.dependencies.channel import channel_of_meter_by_id
 from app.database.models.channel import ChannelModel
 from app.database.crud.channel import channel_crud
 from app.database.session import pg_session
-from app.schemas.channel import ChannelUpdateDTO
+from app.database.schemas.channel import ChannelUpdateDTO
 
 router = APIRouter()
 

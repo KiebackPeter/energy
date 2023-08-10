@@ -2,9 +2,9 @@ from datetime import datetime
 
 from app.core.logger import log
 from app.energy.providers.base_provider import BaseProvider
-from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.measurements import MeasurementCreateDTO
-from app.schemas.meter import MeterCreateDTO
+from app.database.schemas.channel import ChannelWithMeasurements
+from app.database.schemas.measurements import MeasurementCreateDTO
+from app.database.schemas.meter import MeterCreateDTO
 
 
 # cmljaGFyZC52YW5kZW4uaGFtQHpud3Yubmw6VGlqZGVsaWprMTIz
