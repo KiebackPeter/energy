@@ -6,7 +6,12 @@ start all docker containers with
 
     docker-compose up energy
 
+# [C4 Models](http://localhost:4444)
+
+software architecture in c4 notation, its not dynamic so please changes the model (the .dsl file) with any major design changes.
+
 # [Energy dashboard](http://localhost:5555)
+
 flower UI for celery workers and tasks
 
 # [Postgres admin interface](http://localhost:8080)

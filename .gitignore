@@ -2,6 +2,10 @@
 .env
 .coverage
 
+# Structurizr
+.structurizr/
+workspace.json
+
 # IDE
 .venv
 .vscode
