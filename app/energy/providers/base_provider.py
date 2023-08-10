@@ -9,7 +9,7 @@ from app.schemas.meter import MeterCreateDTO
 
 
 class BaseProvider(ABC):
-    """ABC for different measurement providers"""
+    """ABC for different energy providers"""
 
     def __init__(self, headers: dict[str, str] | None):
         """Initialize the provider instance"""
