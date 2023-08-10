@@ -155,14 +155,15 @@ class EnergyProvider:
         )
         if meter_with_channels and meter_with_channels.channels is not None:
             for channel in meter.channels:
-                # latest_check = datetime.fromtimestamp(channel.latest_measurement)
-                latest_check = measurement_crud.latest_channel_measurement(
-                    self._session, channel.id
-                )
-                # TODO fix, now checking only for most recent, missing, known measurement of channels
-                if latest_check is not None and latest_check > last_known:
+            # TODO fix, now checking only for most recent, missing, known measurement of channels
+                if channel.latest_measurement is None:
+                    latest_check = measurement_crud.latest_channel_measurement(
+                        self._session, channel.id
+                    )
+                else:
+                    latest_check = datetime.fromtimestamp(channel.latest_measurement)
+                if latest_check is not None:
                     last_known = latest_check
-                    print(f"FOUND LAST_KOWN: {last_known}")
 
         num_months = (
             (today.year - last_known.year) * 12 + (today.month - last_known.month) + 1
