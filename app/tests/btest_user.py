@@ -1,5 +1,5 @@
 from pytest import fixture
-from app.api.v1.schemas.user import UserCreateDTO
+from app.api.v1.user import UserCreateDTO
 from .config_test import app, db_session, client  # pylint: disable=unused-import
 from app.core.logger import log
 

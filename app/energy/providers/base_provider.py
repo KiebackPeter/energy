@@ -4,12 +4,12 @@ import msgspec
 from httpx import AsyncClient
 
 from app.core.error import HTTP_ERROR
-from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.meter import MeterCreateDTO
+from app.database.schemas.channel import ChannelWithMeasurements
+from app.database.schemas.meter import MeterCreateDTO
 
 
 class BaseProvider(ABC):
-    """ABC for different measurement providers"""
+    """ABC for different energy providers"""
 
     def __init__(self, headers: dict[str, str] | None):
         """Initialize the provider instance"""

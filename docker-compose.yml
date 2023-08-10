@@ -21,22 +21,30 @@ services:
       - ./app:/code/app
     depends_on:
       - database-dashboard
-      - broker-dashboard
 
   worker:
     build: .
     command: bash -c "watchmedo auto-restart -d app/energy -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=info"
+    restart: always
     volumes:
-      - ./app:/code/app
+      - .:/code
     environment:
       - CELERY_BROKER_URL=${BROKER_URL}
       - CELERY_RESULT_BACKEND=${BROKER_URL}
     depends_on:
-      - broker
-      - database
+      - broker-dashboard
+      - database-dashboard
+
+  internal:
+    build: .
+    command: python -c "from app.internal.admin import loop; loop()"
+    restart: always
+    volumes:
+      - ./app:/code/app
 
   broker:
     image: redis:7
+    restart: always
 
   database:
     image: postgres
@@ -60,7 +68,6 @@ services:
       - CELERY_RESULT_BACKEND=${BROKER_URL}
     depends_on:
       - broker
-      - worker
 
   database-dashboard:
     image: dpage/pgadmin4
@@ -75,7 +82,13 @@ services:
     depends_on:
       - database
 
+  structurizr:
+    image: structurizr/lite
+    ports:
+      - 4444:8080
+    volumes:
+      - ./app/core/docs/c4:/usr/local/structurizr
+
 volumes:
-  energy-database:
-    # external: true
+  energy-database: # external: true
   pgadmin-data:

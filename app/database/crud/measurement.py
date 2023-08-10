@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import desc, select, insert
 from sqlalchemy.exc import IntegrityError
 from app.database.models.measurement import MeasurementModel
-from app.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
+from app.database.schemas.measurements import MeasurementCreateDTO, MeasurementPublic
 from app.database.crud.base_crud import Session, CRUDBase # ,log
 
 # NOTE: accumulated values come from sql trigger.

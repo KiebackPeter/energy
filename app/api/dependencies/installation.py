@@ -8,8 +8,8 @@ from app.database.crud.installation import installation_crud, Session
 from app.database.models.installation import InstallationModel
 from app.database.models.user import UserModel
 from app.database.session import pg_session
-from app.energy.provider import EnergyProvider
-from app.schemas.installation import InstallationUpdateDTO
+from app.energy.provider import EnergyProvider, energy_provider_factory
+from app.database.schemas.installation import InstallationUpdateDTO
 
 
 # Guard dependencies
@@ -20,14 +20,12 @@ def of_user(
     current_user: Annotated[UserModel, Depends(current_active_user)],
     installation_id: int | None = None,
 ):
-    if installation_id and current_user.is_superuser: 
+    if installation_id and current_user.is_superuser:
         installation = installation_crud.get(session, installation_id)
         return installation
 
     else:
-        installation = installation_crud.get(
-            session, current_user.installation_id
-        )
+        installation = installation_crud.get(session, current_user.installation_id)
         return installation
 
 
@@ -45,9 +43,12 @@ def with_owner(
 def provider_of_installation(
     installation: Annotated[InstallationModel, Depends(with_owner)],
 ):
-    provider = EnergyProvider(installation)
-
-    return provider
+    if installation.provider_name and installation.provider_key:
+        provider = EnergyProvider(
+            installation.id,
+            energy_provider_factory(installation.provider_name, installation.provider_key),
+        )
+        return provider
 
 
 # SU dependencies

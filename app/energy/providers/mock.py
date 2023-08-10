@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from random import random, randint, choice
-from app.schemas.channel import ChannelWithMeasurements
-from app.schemas.measurements import MeasurementCreateDTO
-from app.schemas.meter import MeterCreateDTO
+from app.energy.providers.base_provider import BaseProvider
+from app.database.schemas.channel import ChannelWithMeasurements
+from app.database.schemas.measurements import MeasurementCreateDTO
+from app.database.schemas.meter import MeterCreateDTO
 
 
-class MockAdapter():
+class MockAdapter(BaseProvider):
     """A mock adapter for testing Energyprovider"""
 
     def __init__(self, provider_key: str) -> None:

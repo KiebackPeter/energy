@@ -3,8 +3,8 @@ from typing import Any
 
 from app.core.logger import log
 from app.energy.providers.base_provider import BaseProvider
-from app.schemas.measurements import MeasurementCreateDTO
-from app.schemas.meter import MeterCreateDTO, MeterInBD
+from app.database.schemas.measurements import MeasurementCreateDTO
+from app.database.schemas.meter import MeterCreateDTO, MeterInBD
 
 
 class TumsAdapter(BaseProvider):

@@ -6,7 +6,7 @@ from sqlalchemy import select, insert
 
 from app.core.error import HTTP_ERROR
 from app.database.models.user import UserModel
-from app.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
+from app.database.schemas.user import UserCreateDTO, UserPublic, UserUpdateSelfDTO
 from app.database.crud.base_crud import Session, CRUDBase  # ,log
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

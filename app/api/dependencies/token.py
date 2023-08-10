@@ -5,7 +5,7 @@ from jose.jwt import decode, encode, JWTError
 
 from app.core.error import HTTP_ERROR
 from app.core.settings import env
-from app.schemas.token import TokenPayload
+from app.database.schemas.token import TokenPayload
 
 
 def encode_access_token(subject: Union[str, Any], expires_delta: timedelta) -> str:

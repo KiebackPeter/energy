@@ -2,7 +2,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import insert, select
 from sqlalchemy.orm import selectinload, Session
 from app.database.models.meter import MeterModel
-from app.schemas.meter import MeterCreateDTO, MeterUpdateDTO
+from app.database.schemas.meter import MeterCreateDTO, MeterUpdateDTO
 
 from app.database.crud.base_crud import Session, CRUDBase  # ,log
 

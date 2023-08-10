@@ -4,8 +4,8 @@
 
 # from app.energy.provider import EnergyProvider
 # from app.energy.adapters.energiemissie import EnergiemissieAdapter
-# from app.schemas.meter import MeterCreateDTO, MeterInBD
-# from app.schemas.measurements import MeasurementCreateDTO
+# from app.database.schemas.meter import MeterCreateDTO, MeterInBD
+# from app.database.schemas.measurements import MeasurementCreateDTO
 
 
 # class TestEnergyProvider:
