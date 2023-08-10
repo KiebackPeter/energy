@@ -25,8 +25,9 @@ services:
   worker:
     build: .
     command: bash -c "watchmedo auto-restart -d app/energy -p '*.py' --recursive -- celery -A app.energy.worker.celery worker --concurrency=1 --loglevel=info"
+    restart: always
     volumes:
-      - ./app:/code/app
+      - .:/code
     environment:
       - CELERY_BROKER_URL=${BROKER_URL}
       - CELERY_RESULT_BACKEND=${BROKER_URL}
@@ -34,8 +35,16 @@ services:
       - broker-dashboard
       - database-dashboard
 
+  internal:
+    build: .
+    command: python -c "from app.internal.admin import loop; loop()"
+    restart: always
+    volumes:
+      - ./app:/code/app
+
   broker:
     image: redis:7
+    restart: always
 
   database:
     image: postgres
