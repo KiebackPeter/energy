@@ -59,14 +59,17 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                     securityComponent = component "Security Component" "Provides functionality related to signing in, changing passwords, etc." "Spring Bean"
                     mainframeBankingSystemFacade = component "Mainframe Banking System Facade" "A facade onto the mainframe banking system." "Spring Bean"
                     service_component = component "Service Component" "Sends services to users." "Spring Bean"
-            }
-
-            database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
-            
-
+                }
+                database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
             }
         }
 
+
+        energy_system = softwaresystem "Energy" "Gain measurement data of installations" {
+            worker_container = container "Worker" "Offload the work of fetching and writing measurements"
+
+        }
+        endi_system = softwaresystem "ENDI" "Gain insights about their installations, request services and ..."
         energy_provider = softwaresystem "Energy Provider" "Facilitates energy measurements (water, gas, electra) from a third party"
 
 

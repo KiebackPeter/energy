@@ -408,9 +408,6 @@ files = [
     {file = "click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
 ]
 
-[package.dependencies]
-colorama = {version = "*", markers = "platform_system == \"Windows\""}
-
 [[package]]
 name = "click-didyoumean"
 version = "0.3.0"
