@@ -1,10 +1,21 @@
 # Deployment
 
-start all docker containers with
+start dev containers:
 
-    docker-compose up -d database pgadmin
+    docker-compose up api worker
 
-    docker-compose up energy
+view architecture with c4 diagrams:
+
+    docker-compose up c4_models
+
+start admin filler:
+
+    docker-compose up internal
+
+run manual update for all installations:
+
+    docker exec -it energy-internal-1 python -c "from app.internal.admin import main; main()"
+
 
 # [C4 Models](http://localhost:4444)
 
