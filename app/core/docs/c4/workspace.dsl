@@ -29,7 +29,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
             service_system = softwaresystem "Service System" "Distributes and act on (support) requests."
             
             // atm = softwaresystem "Energy_Provider" "Provider measurements from third party meters." "Existing System"
-
+            
             web_system = softwaresystem "Webservices" "Gain insights about their installations, request services and ..." {
                 properties {
                     "Owner" "Customer Services"
@@ -48,10 +48,16 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                     mainframeBankingSystemFacade = component "Mainframe Banking System Facade" "A facade onto the mainframe banking system." "Spring Bean"
                     service_component = component "Service Component" "Sends services to users." "Spring Bean"
                 }
-                worker_container = container "Worker" "Offload the work of fetching and writing measurements"
                 database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
             }
         }
+
+
+        energy_system = softwaresystem "Energy" "Gain measurement data of installations" {
+            worker_container = container "Worker" "Offload the work of fetching and writing measurements"
+
+        }
+        endi_system = softwaresystem "ENDI" "Gain insights about their installations, request services and ..."
         energy_provider = softwaresystem "Energy Provider" "Facilitates energy measurements (water, gas, electra) from a third party"
 
 
@@ -73,8 +79,8 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
         worker_container -> energy_provider "Fetch data"
 
         # relationships to/from containers
-        customer -> webpage_container "Visits bigbank.com/ib using" "HTTPS"
-        customer -> webapp_container "Views account balances, and makes payments using"
+        customer -> webpage_container "Visits kieback-peter.net" "HTTPS"
+        customer -> webapp_container "Views installations, and makes requests using"
         // customer -> mobile_container "Views account balances, and makes payments using"
         webpage_container -> webapp_container "Delivers to the customer's web browser"
 
