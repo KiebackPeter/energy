@@ -11,7 +11,7 @@ HINT use the structurizr VScode extention
 workspace "Big Bank plc" "This is an example workspace to illustrate the key features of Structurizr, via the DSL, based around a fictional online banking system." {
 
     model {
-        customer = person "Customer" "A customer of the Kieback&Peter, with authority over installation(s)." "Customer"
+        customer = person "Customer" "A customer of Kieback&Peter, with authority over installation(s)." "Customer"
 
         enterprise "Kieback & Peter | NL" {
             sales_staff = person "Sales Staff" "Handles new customers" "Bank Staff" {
@@ -68,9 +68,9 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
         service_staff -> mainframe "Uses"
 
 
-        energy_provider -> worker_container "Supply data"
         api_container -> worker_container "Request data fetching"
         worker_container -> database "Write data"
+        worker_container -> energy_provider "Fetch data"
 
         # relationships to/from containers
         customer -> webpage_container "Visits bigbank.com/ib using" "HTTPS"
