@@ -13,8 +13,6 @@ from app.api.dependencies.measurements import (
 
 router = APIRouter()
 
-# TODO https://github.com/testdrivenio/fastapi-celery/tree/master
-
 
 def _to_task_out(req: AsyncResult):
     return {"id": req.task_id, "status": req.status}
