@@ -1,11 +1,7 @@
 /*
 
-HINT use the structurizr VScode extention
-
- * This is a combined version of the following workspaces:
- *
- * - "Big Bank plc - System Landscape" (https://structurizr.com/share/28201/)
- * - "Big Bank plc - Internet Banking System" (https://structurizr.com/share/36141/)
+use the structurizr VScode extention
+ 
 */
 
 workspace "Big Bank plc" "This is an example workspace to illustrate the key features of Structurizr, via the DSL, based around a fictional online banking system." {
@@ -29,7 +25,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
             service_system = softwaresystem "Service System" "Distributes and act on (support) requests."
             
             // atm = softwaresystem "Energy_Provider" "Provider measurements from third party meters." "Existing System"
-
+            
             web_system = softwaresystem "Webservices" "Gain insights about their installations, request services and ..." {
                 properties {
                     "Owner" "Customer Services"
@@ -37,9 +33,25 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                 }
                 // url https://en.wikipedia.org/wiki/Online_banking
 
-                webapp_container = container "Web Application" "Provides all of the Internet banking functionality to customers via their web browser." "JavaScript and Angular" "Web Browser"
+                webpage_container = container "Static Webpage" "Delivers the static content and the Internet banking single page application." "static files"
+                webapp_container = container "Web Application" "Provides all functionality to customers via their web browser." "Nextjs or Nuxt" "Web Browser"{
+                    insight_component = component "Insights" "Gain instalaltioninsights"
+                    casting_component = component "Narrowcasting" "Narrowcasting"
+                    steering_component = component "Smart Steering" "Installation utilities"
+
+                }
+                webapp_employee_container = container "Employee Application" "Provides all functionality to employees via their web browser." "Nextjs or Nuxt" "Web Browser"{
+                    insight_component = component "Employee Insights" "Overview of all installations and users"
+                    onboarding_component = component "Onboarding" "Assign user to installation or provide demo account"
+
+                }
                 // mobile_container = container "Mobile App" "Provides a limited subset of the Internet banking functionality to customers via their mobile device." "Xamarin" "Mobile App"
-                webpage_container = container "Static Webpage" "Delivers the static content and the Internet banking single page application." "Java and Spring MVC"
+                
+                energy_container = container "Energy" "Gain measurement data of installations" {
+                    worker_component = component "Worker" "Offload remote fetching and writing measurements"
+                }
+                endi_container = container "ENDI" "Gain insights about installations, request services and ..."
+            
                 api_container = container "API Application" "Provides Internet banking functionality via a JSON/HTTPS API." "Java and Spring MVC" {
                     signinController = component "Sign In Controller" "Allows users to sign in to the Internet Banking System." "Spring MVC Rest Controller"
                     accountsSummaryController = component "Accounts Summary Controller" "Provides customers with a summary of their bank accounts." "Spring MVC Rest Controller"
@@ -47,11 +59,14 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                     securityComponent = component "Security Component" "Provides functionality related to signing in, changing passwords, etc." "Spring Bean"
                     mainframeBankingSystemFacade = component "Mainframe Banking System Facade" "A facade onto the mainframe banking system." "Spring Bean"
                     service_component = component "Service Component" "Sends services to users." "Spring Bean"
-                }
-                worker_container = container "Worker" "Offload the work of fetching and writing measurements"
-                database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
+            }
+
+            database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
+            
+
             }
         }
+
         energy_provider = softwaresystem "Energy Provider" "Facilitates energy measurements (water, gas, electra) from a third party"
 
 
@@ -68,13 +83,13 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
         service_staff -> mainframe "Uses"
 
 
-        api_container -> worker_container "Request data fetching"
-        worker_container -> database "Write data"
-        worker_container -> energy_provider "Fetch data"
+        api_container -> worker_component "Request data fetching"
+        worker_component -> database "Write data"
+        worker_component -> energy_provider "Fetch data"
 
         # relationships to/from containers
-        customer -> webpage_container "Visits bigbank.com/ib using" "HTTPS"
-        customer -> webapp_container "Views account balances, and makes payments using"
+        customer -> webpage_container "Visits kieback-peter.net" "HTTPS"
+        customer -> webapp_container "Views installations, and makes requests using"
         // customer -> mobile_container "Views account balances, and makes payments using"
         webpage_container -> webapp_container "Delivers to the customer's web browser"
 
