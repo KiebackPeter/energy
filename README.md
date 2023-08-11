@@ -1,5 +1,9 @@
 # Deployment
 
+"deploy":
+
+    docker-compose up
+
 start dev containers:
 
     docker-compose up api worker
@@ -50,24 +54,11 @@ click on 'add new server', go to connection tab:
 - [Fast api](https://fastapi.tiangolo.com/) + Uvicorn
 - [SQLAlchemy](https://sqlalchemy.org) + [Alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html#the-migration-environment) + Postgres
 
-## Poetry
-
-make sure you have poetry as package manager
-
-install requirements
-
-    poetry install
-
-activate shell with dependencies:
-
-    poetry shell
-
-    deactivate
 
 ## Alembic
 
-to write database migrations change DB_HOST in env to localhost and forward docker port to localhost in docker-compose:
+write (local) database migrations:
 
     alembic revision --autogenerate -m "description"
 
-if migration script is tested, undo above changes and rerun docker-compose, this updates the database with the latest migration version. Please do improve workflow :)
+if migration script is tested, rerun docker-compose, this updates the database with the latest migration version.
