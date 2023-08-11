@@ -1,4 +1,7 @@
 /*
+
+HINT use the structurizr VScode extention
+
  * This is a combined version of the following workspaces:
  *
  * - "Big Bank plc - System Landscape" (https://structurizr.com/share/28201/)
@@ -8,12 +11,12 @@
 workspace "Big Bank plc" "This is an example workspace to illustrate the key features of Structurizr, via the DSL, based around a fictional online banking system." {
 
     model {
-        customer = person "Personal Banking Customer" "A customer of the bank, with personal bank accounts." "Customer"
+        customer = person "Building Manager" "A customer of the bank, with personal bank accounts." "Customer"
 
-        acquirer = softwaresystem "Acquirer" "Facilitates PIN transactions for merchants."
+        provider = softwaresystem "Energy Provider" "Facilitates energy measurements (water, gas, electra) from a third party"
 
-        enterprise "Big Bank plc" {
-            supportStaff = person "Customer Service Staff" "Customer service staff within the bank." "Bank Staff" {
+        enterprise "MyKie portaal" {
+            supportStaff = person "Contractor" "Customer service staff who handles new installations" "Bank Staff" {
                 properties {
                     "Location" "Customer Services"
                 }
@@ -24,7 +27,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                 }
             }
 
-            mainframe = softwaresystem "Mainframe Banking System" "Stores all of the core banking information about customers, accounts, transactions, etc." "Existing System"
+            mainframe = softwaresystem "Mainframe Energy" "Stores all of the core banking information about customers, accounts, transactions, etc." "Existing System"
             email = softwaresystem "E-mail System" "The internal Microsoft Exchange e-mail system." "Existing System"
             atm = softwaresystem "ATM" "Allows customers to withdraw cash." "Existing System"
 
@@ -61,7 +64,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
         atm -> mainframe "Uses"
         backoffice -> mainframe "Uses"
 
-        acquirer -> mainframe "Peforms clearing and settlement"
+        provider -> mainframe "Peforms clearing and settlement"
 
         # relationships to/from containers
         customer -> webApplication "Visits bigbank.com/ib using" "HTTPS"
