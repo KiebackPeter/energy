@@ -1,13 +1,12 @@
 /*
-
 use the structurizr VScode extention
- 
 */
 
 workspace "Big Bank plc" "This is an example workspace to illustrate the key features of Structurizr, via the DSL, based around a fictional online banking system." {
 
     model {
         customer = person "Customer" "A customer of Kieback&Peter, with authority over installation(s)." "Customer"
+        energy_provider = softwaresystem "Energy Provider" "Facilitates energy measurements (water, gas, electra) from a third party"
 
         enterprise "Kieback & Peter | NL" {
             sales_staff = person "Sales Staff" "Handles new customers" "Bank Staff" {
@@ -15,106 +14,76 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                     "Location" "Customer Services"
                 }
             }
-            service_staff = person "Service Staff" "Deliver service_system" "Bank Staff" {
-                properties {
-                    "Location" "Internal Services"
-                }
-            }
 
-            mainframe = softwaresystem "Mainframe" "Stores all of the core information about customers, accounts, transactions, etc." "Existing System"
-            service_system = softwaresystem "Service System" "Distributes and act on (support) requests."
-            
-            // atm = softwaresystem "Energy_Provider" "Provider measurements from third party meters." "Existing System"
-            webapp_system = softwaresystem "Web Application" "Provides all functionality to customers via their web browser." "Web Browser"{
+            mainframe = softwaresystem "Mainframe KP" "Stores all of the core information about customers, accounts, transactions, etc."
+
+            app_system = softwaresystem "Web Application" "Provides all functionality to customers via their web browser." "Web Browser"{
+                webpage_container = container "Static Webpage" "Delivers the static content and the Internet banking single page application." "Java and Spring MVC"
                 insight_container = container "Insights" "Gain instalaltioninsights"
                 casting_container = container "Narrowcasting" "Narrowcasting"
                 steering_container = container "Smart Steering" "Installation utilities"
 
             }
-            webapp_employee_system = softwaresystem "Employee Web Application" "Provides all functionality to employees via their web browser." "Web Browser"{
-                    insight_employee_container = container "Employee Insights" "Overview of all installations and users"
-                    onboarding_container = container "Onboarding" "Assign user to installation or provide demo account"
+            back_office_app_system = softwaresystem "Employee Web Application" "Provides all functionality to employees via their web browser." "Web Browser"{
+                back_office_insight_container = container "Employee Insights" "Overview of all installations and users"
+                back_office_onboarding_container = container "Onboarding" "Assign user to installation or provide demo account"
             }
-            
-            web_system = softwaresystem "Webservices" "Gain insights about their installations, request services and ..." {
+
+            web_balancer = softwaresystem "Webservices" "Network gateway and load balancer for services" {
                 properties {
                     "Owner" "Customer Services"
                     "Development Team" "Dev/Internet Services"
                 }
-                // url https://en.wikipedia.org/wiki/Online_banking
-
-                // mobile_container = container "Mobile App" "Provides a limited subset of the Internet banking functionality to customers via their mobile device." "Xamarin" "Mobile App"
-                
-                energy_container = container "Energy" "Gain measurement data of installations" {
-                    worker_component = component "Worker" "Offload remote fetching and writing measurements"
+                energy_container = container "Energy" "Provides all of the Internet banking functionality to customers via their web browser." {
+                    task_component = component "Task Component" "Schedules and send tasks"
                 }
-                endi_container = container "ENDI" "Gain insights about installations, request services and ..."
-            
-                api_container = container "API Application" "Provides Internet banking functionality via a JSON/HTTPS API." "Java and Spring MVC" {
+                endi_container = container "ENDI" "Provides all of the Internet banking functionality to customers via their web browser."
+                api_container = container "API Gateway" "Provides webservices " "REST API" {
                     signinController = component "Sign In Controller" "Allows users to sign in to the Internet Banking System." "Spring MVC Rest Controller"
                     accountsSummaryController = component "Accounts Summary Controller" "Provides customers with a summary of their bank accounts." "Spring MVC Rest Controller"
                     resetPasswordController = component "Reset Password Controller" "Allows users to reset their passwords with a single use URL." "Spring MVC Rest Controller"
                     securityComponent = component "Security Component" "Provides functionality related to signing in, changing passwords, etc." "Spring Bean"
-                    mainframeBankingSystemFacade = component "Mainframe Banking System Facade" "A facade onto the webapp_employee_system banking system." "Spring Bean"
+                    mainframeBankingSystemFacade = component "Mainframe Banking System Facade" "A facade onto the mainframe banking system." "Spring Bean"
                     service_component = component "Service Component" "Sends services to users." "Spring Bean"
                 }
+                worker_container = container "Worker" "Offload the work of itensive tasks"
                 database = container "Database" "Stores user registration information, hashed authentication credentials, access logs, etc." "Oracle Database Schema" "Database"
-            }
-
-        energy_system = softwaresystem "Energy" "Gain measurement data of installations" {
-            worker_container = container "Worker" "Offload the work of fetching and writing measurements"
-
+            }            
         }
-        endi_system = softwaresystem "ENDI" "Gain insights about their installations, request services and ..."
-        energy_provider = softwaresystem "Energy Provider" "Facilitates energy measurements (water, gas, electra) from a third party"
-
-        }
-
-
 
 
         # relationships between people and software systems
-        customer -> web_system "View installation services, invoices and request service"
-        web_system -> service_system "Request service system using"
-        service_system -> service_staff "Sends services to"
-        service_staff -> customer "Deliver service system to"
-        customer -> sales_staff "Requests demo "
-        sales_staff -> webapp_employee_system "Uses"
-        service_staff -> webapp_employee_system "Uses"
-        // customer -> atm "Withdraws cash using"
-        // atm -> webapp_employee_system "Uses"
+        customer -> app_system "Visits kieback-peter.net for webservices"
+        customer -> sales_staff "Request demo"
+        sales_staff -> back_office_onboarding_container "Create demo account"
 
 
-        api_container -> worker_component "Request data fetching"
-        worker_component -> database "Write data"
-        worker_component -> energy_provider "Fetch data"
+        api_container -> energy_container "Add installation"
+        task_component -> worker_container "Request data fetching"
+        worker_container -> energy_provider "Fetch data"
+        worker_container -> database "Write data"
+
+        back_office_app_system -> web_balancer "Allow only from within VPN"
+        app_system -> web_balancer "Make API requests"
+
 
         # relationships to/from containers
-        customer -> webapp_system "Views installations, and makes requests using"
-        // customer -> mobile_container "Views account balances, and makes payments using"
-
-        # relationships to/from components
-        webapp_system -> signinController "Makes API calls to" "JSON/HTTPS"
-        webapp_system -> accountsSummaryController "Makes API calls to" "JSON/HTTPS"
-        webapp_system -> resetPasswordController "Makes API calls to" "JSON/HTTPS"
-        // mobile_container -> signinController "Makes API calls to" "JSON/HTTPS"
-        // mobile_container -> accountsSummaryController "Makes API calls to" "JSON/HTTPS"
-        // mobile_container -> resetPasswordController "Makes API calls to" "JSON/HTTPS"
+        # webpage_container -> energy_container "Request one of the services from web browser"
         signinController -> securityComponent "Uses"
         accountsSummaryController -> mainframeBankingSystemFacade "Uses"
         resetPasswordController -> securityComponent "Uses"
         resetPasswordController -> service_component "Uses"
         securityComponent -> database "Reads from and writes to" "JDBC"
-        mainframeBankingSystemFacade -> webapp_employee_system "Makes API calls to" "XML/HTTPS"
-        service_component -> service_system "Sends service_system using"
+        mainframeBankingSystemFacade -> mainframe "Makes API calls to" "XML/HTTPS"
 
         deploymentEnvironment "Development" {
             deploymentNode "Developer Laptop" "" "Microsoft Windows 10 or Apple macOS" {
                 deploymentNode "Web Browser" "" "Chrome, Firefox, Safari, or Edge" {
-                    developerwebapp_containerInstance = softwareSystemInstance webapp_system
+                    developerenergy_containerInstance = containerInstance energy_container
                 }
                 deploymentNode "Docker Container - Web Server" "" "Docker" {
                     deploymentNode "Apache Tomcat" "" "Apache Tomcat 8.x" {
+                        developerwebpage_containerInstance = containerInstance webpage_container
                         developerapi_containerInstance = containerInstance api_container
                     }
                 }
@@ -126,7 +95,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
             }
             deploymentNode "Big Bank plc" "" "Big Bank plc data center" "" {
                 deploymentNode "bigbank-dev001" "" "" "" {
-                    softwareSystemInstance webapp_employee_system
+                    softwareSystemInstance mainframe
                 }
             }
 
@@ -138,11 +107,16 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
             // }
             deploymentNode "Customer's computer" "" "Microsoft Windows or Apple macOS" {
                 deploymentNode "Web Browser" "" "Chrome, Firefox, Safari, or Edge" {
-                    livewebapp_containerInstance = softwareSystemInstance webapp_system
+                    liveenergy_containerInstance = containerInstance energy_container
                 }
             }
 
             deploymentNode "Big Bank plc" "" "Big Bank plc data center" {
+                deploymentNode "bigbank-web***" "" "Ubuntu 16.04 LTS" "" 4 {
+                    deploymentNode "Apache Tomcat" "" "Apache Tomcat 8.x" {
+                        livewebpage_containerInstance = containerInstance webpage_container
+                    }
+                }
                 deploymentNode "bigbank-api***" "" "Ubuntu 16.04 LTS" "" 8 {
                     deploymentNode "Apache Tomcat" "" "Apache Tomcat 8.x" {
                         liveapi_containerInstance = containerInstance api_container
@@ -160,7 +134,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
                     }
                 }
                 deploymentNode "bigbank-prod001" "" "" "" {
-                    softwareSystemInstance webapp_employee_system
+                    softwareSystemInstance mainframe
                 }
             }
 
@@ -191,19 +165,25 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
             autoLayout
         }
 
-        systemcontext webapp_system "Webapp_SystemContext" {
-            include *
-            autoLayout
-        }
-        systemcontext web_system "Web_SystemContext" {
-            include *
-            autoLayout
-        }
-
-        container web_system "Containers" {
+        systemcontext web_balancer "WebSystem" {
             include *
             animation {
-                customer webapp_employee_system service_system
+                web_balancer
+                mainframe
+            }
+            autoLayout
+        }
+        # container app_system "AppContainers" {
+        #     include *
+        #     autoLayout
+
+        # }
+
+        container web_balancer "Containers" {
+            include *
+            animation {
+                customer mainframe
+                energy_container
                 // mobile_container
                 api_container
                 database
@@ -214,9 +194,7 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
         component api_container "Components" {
             include *
             animation {
-                webapp_system 
-                // mobile_container 
-                database service_system webapp_employee_system
+                database
                 signinController securityComponent
                 accountsSummaryController mainframeBankingSystemFacade
                 resetPasswordController service_component
@@ -225,36 +203,34 @@ workspace "Big Bank plc" "This is an example workspace to illustrate the key fea
         }
 
         dynamic api_container "SignIn" "Summarises how the sign in feature works in the single-page application." {
-            webapp_system -> signinController "Submits credentials to"
             signinController -> securityComponent "Validates credentials using"
             securityComponent -> database "select * from users where username = ?"
             database -> securityComponent "Returns user data to"
             securityComponent -> signinController "Returns true if the hashed password matches"
-            signinController -> webapp_system "Sends back an authentication token to"
             autoLayout
         }
 
-        deployment web_system "Development" "DevelopmentDeployment" {
-            include *
-            animation {
-                developerwebapp_containerInstance
-                developerwebpage_containerInstance developerapi_containerInstance
-                developerDatabaseInstance
-            }
-            autoLayout
-        }
+        # deployment web_balancer "Development" "DevelopmentDeployment" {
+        #     include *
+        #     animation {
+        #         developerenergy_containerInstance
+        #         developerwebpage_containerInstance developerapi_containerInstance
+        #         developerDatabaseInstance
+        #     }
+        #     autoLayout
+        # }
 
-        deployment web_system "Live" "LiveDeployment" {
-            include *
-            animation {
-                livewebapp_containerInstance
-                // livemobile_containerInstance
-                livewebpage_containerInstance liveapi_containerInstance
-                livePrimaryDatabaseInstance
-                liveSecondaryDatabaseInstance
-            }
-            autoLayout
-        }
+        # deployment web_balancer "Live" "LiveDeployment" {
+        #     include *
+        #     animation {
+        #         liveenergy_containerInstance
+        #         // livemobile_containerInstance
+        #         livewebpage_containerInstance liveapi_containerInstance
+        #         livePrimaryDatabaseInstance
+        #         liveSecondaryDatabaseInstance
+        #     }
+        #     autoLayout
+        # }
 
         styles {
             element "Person" {
