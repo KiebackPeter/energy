@@ -40,7 +40,7 @@ class EnergiemissieAdapter(BaseProvider):
         return meter_objects
 
     def format_measurements(self, raw_channels) -> list[ChannelWithMeasurements]:
-        if len(raw_channels) < 0:
+        if not raw_channels:                                                       #Gebruiken Flag?
             log.critical("No measurements found on source")
             return []
 
@@ -84,6 +84,20 @@ class EnergiemissieAdapter(BaseProvider):
         formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
             f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_month}"
+        )        
+        
+        if not raw_measurements:                                                                        #flagging
+            raw_measurements = await self.fetch_months_month_measurements(source_id, date)
+            
+        return self.format_measurements(raw_measurements)
+
+    async def fetch_months_month_measurements(self, source_id: str, date: datetime): #TEST IVM INVOICE
+        """Get measurement values from a meter with only month values"""
+
+        formatted_month = f"{date.year}/{date.month}"
+        raw_measurements = await self.make_request(
+            f"{self.base_url}/measurements/{source_id}/types/month/months/{formatted_month}"
         )
 
-        return self.format_measurements(raw_measurements)
+        return raw_measurements
+    
