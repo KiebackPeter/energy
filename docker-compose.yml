@@ -82,7 +82,7 @@ services:
     depends_on:
       - database
 
-  structurizr:
+  c4_models:
     image: structurizr/lite
     ports:
       - 4444:8080

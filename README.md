@@ -1,10 +1,25 @@
 # Deployment
 
-start all docker containers with
+"deploy":
 
-    docker-compose up -d database pgadmin
+    docker-compose up
 
-    docker-compose up energy
+start dev containers:
+
+    docker-compose up api worker
+
+view architecture with c4 diagrams:
+
+    docker-compose up c4_models
+
+start admin filler:
+
+    docker-compose up internal
+
+run manual update for all installations:
+
+    docker exec -it energy-internal-1 python -c "from app.internal.admin import main; main()"
+
 
 # [C4 Models](http://localhost:4444)
 
@@ -39,24 +54,11 @@ click on 'add new server', go to connection tab:
 - [Fast api](https://fastapi.tiangolo.com/) + Uvicorn
 - [SQLAlchemy](https://sqlalchemy.org) + [Alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html#the-migration-environment) + Postgres
 
-## Poetry
-
-make sure you have poetry as package manager
-
-install requirements
-
-    poetry install
-
-activate shell with dependencies:
-
-    poetry shell
-
-    deactivate
 
 ## Alembic
 
-to write database migrations change DB_HOST in env to localhost and forward docker port to localhost in docker-compose:
+write (local) database migrations:
 
     alembic revision --autogenerate -m "description"
 
-if migration script is tested, undo above changes and rerun docker-compose, this updates the database with the latest migration version. Please do improve workflow :)
+if migration script is tested, rerun docker-compose, this updates the database with the latest migration version.
