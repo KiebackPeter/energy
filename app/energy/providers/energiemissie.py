@@ -79,25 +79,25 @@ class EnergiemissieAdapter(BaseProvider):
         return self.format_measurements(raw_measurements)
 
     async def fetch_month_measurements(self, source_id: str, date: datetime):
-        """Get measurement values from a meter on a speficic day"""
+        """Get measurement values from a meter on a speficic month"""
 
         formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
             f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_month}"
         )        
         
-        if not raw_measurements:                                                                        #flagging
+        if not raw_measurements: 
+        #Fetch measurements from the Monthly-interval URL until normal month values becomes available
             raw_measurements = await self.fetch_months_month_measurements(source_id, date)
-            
+                    
         return self.format_measurements(raw_measurements)
 
-    async def fetch_months_month_measurements(self, source_id: str, date: datetime): #TEST IVM INVOICE
-        """Get measurement values from a meter with only month values"""
+
+    async def fetch_months_month_measurements(self, source_id: str, date: datetime):
+        """Get INVOICE-measurement values from a meter with only monthly values"""
 
         formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
             f"{self.base_url}/measurements/{source_id}/types/month/months/{formatted_month}"
         )
-
         return raw_measurements
-    
