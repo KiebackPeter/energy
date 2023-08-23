@@ -13,7 +13,8 @@ class EnergiemissieAdapter(BaseProvider):
     def __init__(self, provider_key: str) -> None:
         super().__init__({"x-api-key": provider_key})
         self.base_url = "https://mijnenergiemissie.nl/webservice/v2"
-
+        self.flag = True
+        
     async def fetch_meter_list(self) -> list[MeterCreateDTO]:
         """Returns all available meters from endpoint in meter objects"""
 
@@ -79,25 +80,32 @@ class EnergiemissieAdapter(BaseProvider):
         return self.format_measurements(raw_measurements)
 
     async def fetch_month_measurements(self, source_id: str, date: datetime):
-        """Get measurement values from a meter on a speficic month"""
+        """Get measurement values from a meter on a specific month"""
 
         formatted_month = f"{date.year}/{date.month}"
         raw_measurements = await self.make_request(
             f"{self.base_url}/measurements/{source_id}/types/interval/months/{formatted_month}"
-        )        
+        )             
         
-        if not raw_measurements: 
-        #Fetch measurements from the Monthly-interval URL until normal month values becomes available
-            raw_measurements = await self.fetch_months_month_measurements(source_id, date)
-                    
+        if raw_measurements and self.flag == True: 
+            raw_measurements = raw_measurements
+            print('IF Interval_url ACTIEF')
+        
+        else: 
+            raw_measurements_invoice = await self.make_request(
+                f"{self.base_url}/measurements/{source_id}/types/month/months/{formatted_month}"
+            )  
+                 
+            if raw_measurements_invoice and not raw_measurements: 
+                raw_measurements = raw_measurements_invoice
+                self.flag = False
+                print('Raw INVOICE:',raw_measurements_invoice,self.flag)
+                
+            elif raw_measurements and self.flag == False:
+                    raw_measurements = raw_measurements_invoice
+                   
+                    print('Raw INVOICE last:',raw_measurements,self.flag)
+                    self.flag = True
+                    print('Raw INVOICE FLAG:',self.flag)
+                              
         return self.format_measurements(raw_measurements)
-
-
-    async def fetch_months_month_measurements(self, source_id: str, date: datetime):
-        """Get INVOICE-measurement values from a meter with only monthly values"""
-
-        formatted_month = f"{date.year}/{date.month}"
-        raw_measurements = await self.make_request(
-            f"{self.base_url}/measurements/{source_id}/types/month/months/{formatted_month}"
-        )
-        return raw_measurements
